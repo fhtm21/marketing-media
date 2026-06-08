@@ -161,6 +161,17 @@ function computeResult(scores) {
   return PERSONAS[order.find(k => scores[k] === max) || "analyst"];
 }
 
+// ── Responsive breakpoint hook ─────────────────────────────
+function useIsMobile() {
+  const [mob, setMob] = useState(() => typeof window !== "undefined" && window.innerWidth < 700);
+  useEffect(() => {
+    const h = () => setMob(window.innerWidth < 700);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+  return mob;
+}
+
 // ── Starfield ───────────────────────────────────────────────
 function Starfield({ count = 55, fixed = false }) {
   const stars = useMemo(() =>
@@ -185,15 +196,15 @@ function Starfield({ count = 55, fixed = false }) {
 }
 
 // ── Space Map (full-width top strip) ───────────────────────
-function SpaceMap({ currentIdx, rocketPos, traveling }) {
+function SpaceMap({ currentIdx, rocketPos, traveling, mob }) {
   const pathStr = PLANETS.map(p => `${p.px},${p.py}`).join(" ");
   return (
     <div style={{
-      position: "relative", height: 120, flexShrink: 0,
+      position: "relative", height: mob ? 72 : 120, flexShrink: 0,
       background: "linear-gradient(180deg,#020510 0%,#040918 100%)",
       borderBottom: "1px solid rgba(127,212,255,.12)", overflow: "hidden",
     }}>
-      <Starfield count={38} />
+      <Starfield count={mob ? 22 : 38} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
         <polyline points={pathStr} fill="none" stroke="rgba(127,212,255,.15)" strokeWidth="0.45" strokeDasharray="1 1.8" />
@@ -207,7 +218,7 @@ function SpaceMap({ currentIdx, rocketPos, traveling }) {
       </svg>
       {PLANETS.map((planet, i) => {
         const isDone = i < currentIdx, isCurrent = i === currentIdx;
-        const sz = isCurrent ? 42 : isDone ? 28 : 20;
+        const sz = isCurrent ? (mob ? 26 : 42) : isDone ? (mob ? 17 : 28) : (mob ? 12 : 20);
         return (
           <div key={planet.id} style={{
             position: "absolute", left: `${planet.px}%`, top: `${planet.py}%`,
@@ -224,7 +235,7 @@ function SpaceMap({ currentIdx, rocketPos, traveling }) {
               fontSize: isCurrent ? 20 : isDone ? 13 : 9,
               transition: "all .4s ease",
             }}>{planet.emoji}</div>
-            {isCurrent && (
+            {isCurrent && !mob && (
               <div style={{
                 position: "absolute", top: "calc(100% + 3px)", left: "50%",
                 transform: "translateX(-50%)", fontSize: 7, color: planet.color,
@@ -238,16 +249,16 @@ function SpaceMap({ currentIdx, rocketPos, traveling }) {
         position: "absolute", left: `${rocketPos.x}%`, top: `${rocketPos.y}%`,
         transform: "translate(-50%,-50%)",
         transition: traveling ? "left 1.05s cubic-bezier(.2,.9,.2,1), top 1.05s cubic-bezier(.2,.9,.2,1)" : "none",
-        zIndex: 10, fontSize: 21,
+        zIndex: 10, fontSize: mob ? 13 : 21,
         filter: "drop-shadow(0 0 7px rgba(127,212,255,.7))",
         animation: traveling ? "none" : "floaty 2.5s ease-in-out infinite",
         transform: `translate(-50%,-50%) rotate(${traveling ? "-28deg" : "0deg"})`,
       }}>🚀</div>
-      <div style={{
+      {!mob && <div style={{
         position: "absolute", top: 6, left: 12, zIndex: 3,
         fontFamily: "'Orbitron',monospace", fontSize: 7, letterSpacing: 2.5,
         color: "rgba(127,212,255,.32)", fontWeight: 700,
-      }}>ORBIT MISSION MAP</div>
+      }}>ORBIT MISSION MAP</div>}
     </div>
   );
 }
@@ -390,7 +401,7 @@ function TravelingScene({ nextPlanet }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 1 — FLOATING ORBS (earth) — CLICK
 // ════════════════════════════════════════════════════════════
-function MechOrbs({ options, onPick, color }) {
+function MechOrbs({ options, onPick, color, mob }) {
   const [t, setT] = useState(0);
   const rafRef = useRef();
   const startRef = useRef(Date.now());
@@ -420,14 +431,14 @@ function MechOrbs({ options, onPick, color }) {
         return (
           <button key={i} onClick={() => onPick(opt)} style={{
             position: "absolute",
-            left: `${Math.max(4, Math.min(76, x))}%`,
+            left: `${Math.max(2, Math.min(mob ? 60 : 76, x))}%`,
             top: `${Math.max(12, Math.min(78, y))}%`,
-            width: 138, height: 138, borderRadius: "50%",
+            width: mob ? 100 : 138, height: mob ? 100 : 138, borderRadius: "50%",
             background: `radial-gradient(circle at 38% 32%,${c}44,${c}16)`,
             border: `2px solid ${c}88`,
             boxShadow: `0 0 30px ${c}44, 0 0 70px ${c}18`,
             color: "#fff", fontFamily: "'Exo 2',sans-serif",
-            fontSize: 11.5, fontWeight: 600, lineHeight: 1.4,
+            fontSize: mob ? 10 : 11.5, fontWeight: 600, lineHeight: 1.4,
             cursor: "pointer", padding: "8px 14px", textAlign: "center",
             display: "flex", alignItems: "center", justifyContent: "center",
             transition: "transform .15s, box-shadow .15s", zIndex: 2,
@@ -445,11 +456,27 @@ function MechOrbs({ options, onPick, color }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 2 — DRAG & DROP (nebula)
 // ════════════════════════════════════════════════════════════
-function MechDrag({ options, onPick }) {
+function MechDrag({ options, onPick, mob }) {
   const [dragging, setDragging] = useState(null);
   const [hovering, setHovering] = useState(false);
   const cardColors = ["#ff9ad1", "#ffd36e", "#7fd4ff", "#9af5c8"];
   const icons = ["📊", "📱", "⚙️", "🤖"];
+  if (mob) return (
+    <div style={{ width: "100%", height: "100%", overflow: "auto", padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 9, position: "relative" }}>
+      <Starfield count={18} />
+      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 7.5, color: "rgba(127,212,255,.42)", letterSpacing: 1.5, paddingBottom: 4, position: "relative", zIndex: 1, flexShrink: 0 }}>📶 KETUK SINYAL PILIHANMU</div>
+      {options.map((opt, i) => (
+        <button key={i} onClick={() => onPick(opt)} style={{
+          background: `${cardColors[i % cardColors.length]}0e`, border: `1.5px solid ${cardColors[i % cardColors.length]}55`,
+          borderRadius: 10, padding: "12px 14px", color: "#e8f0ff", fontFamily: "'Exo 2',sans-serif",
+          fontSize: 13.5, fontWeight: 600, cursor: "pointer", textAlign: "left",
+          position: "relative", zIndex: 1, display: "flex", gap: 10, alignItems: "center",
+        }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>{icons[i]}</span>{opt.t}
+        </button>
+      ))}
+    </div>
+  );
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", gap: 0, overflow: "hidden", position: "relative" }}>
       <Starfield count={30} />
@@ -560,17 +587,17 @@ function MechShoot({ options, onPick }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 4 — HOLOGRAM PANELS (kepler) — CLICK GRID
 // ════════════════════════════════════════════════════════════
-function MechHologram({ options, onPick, color }) {
+function MechHologram({ options, onPick, color, mob }) {
   const [hovered, setHovered] = useState(null);
   const c = color || "#ffb86b";
   const panelLabels = ["ALPHA", "BETA", "GAMMA", "DELTA"];
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-      <Starfield count={30} />
+    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: mob ? "auto" : "hidden" }}>
+      <Starfield count={mob ? 18 : 30} />
       <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", fontFamily: "'Orbitron',monospace", fontSize: 8.5, color: `${c}55`, letterSpacing: 2, whiteSpace: "nowrap", zIndex: 2 }}>
         AKTIFKAN PANEL HOLOGRAM PILIHANMU
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, padding: "30px 24px 16px", zIndex: 2, width: "100%", maxWidth: 660 }}>
+      <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: mob ? 9 : 14, padding: mob ? "30px 14px 14px" : "30px 24px 16px", zIndex: 2, width: "100%", maxWidth: mob ? "100%" : 660 }}>
         {options.map((opt, i) => (
           <button key={i} onClick={() => onPick(opt)}
             onMouseEnter={() => setHovered(i)}
@@ -602,10 +629,28 @@ function MechHologram({ options, onPick, color }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 5 — SKILL DRAG TO DROP SLOT (sigma)
 // ════════════════════════════════════════════════════════════
-function MechSkillDrop({ options, onPick, color }) {
+function MechSkillDrop({ options, onPick, color, mob }) {
   const [dragging, setDragging] = useState(null);
   const [slotHover, setSlotHover] = useState(false);
   const c = color || "#9af5c8";
+  const skillCardColors = ["#7fd4ff", "#ff9ad1", "#9af5c8", "#c4a8ff"];
+  if (mob) return (
+    <div style={{ width: "100%", height: "100%", overflow: "auto", padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 9, position: "relative" }}>
+      <Starfield count={18} />
+      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 7.5, color: `${c}66`, letterSpacing: 1.5, paddingBottom: 4, position: "relative", zIndex: 1, flexShrink: 0 }}>💫 KETUK SKILL IMPIANMU</div>
+      {options.map((opt, i) => (
+        <button key={i} onClick={() => onPick(opt)} style={{
+          background: `${skillCardColors[i]}0e`, border: `1.5px solid ${skillCardColors[i]}55`,
+          borderRadius: 10, padding: "12px 14px", color: "#e8f0ff", fontFamily: "'Exo 2',sans-serif",
+          fontSize: 13.5, fontWeight: 600, cursor: "pointer", textAlign: "left",
+          position: "relative", zIndex: 1,
+        }}>
+          <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 7, color: skillCardColors[i], letterSpacing: 1, marginBottom: 4 }}>SKILL.{String(i + 1).padStart(2, "0")}</div>
+          {opt.t}
+        </button>
+      ))}
+    </div>
+  );
   const positions = [
     { top: "10%", left: "8%" }, { top: "10%", right: "8%", left: "auto" },
     { bottom: "18%", left: "6%" }, { bottom: "18%", right: "6%", left: "auto" },
@@ -668,14 +713,14 @@ function MechSkillDrop({ options, onPick, color }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 6 — ORBITAL RING CLICK (zeta)
 // ════════════════════════════════════════════════════════════
-function MechOrbit({ options, onPick, color }) {
+function MechOrbit({ options, onPick, color, mob }) {
   const c = color || "#c4a8ff";
   const [hovered, setHovered] = useState(null);
   const positions = [
-    { top: "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center" },
-    { top: "50%", right: "4%", transform: "translateY(-50%)", textAlign: "right" },
-    { bottom: "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center" },
-    { top: "50%", left: "4%", transform: "translateY(-50%)", textAlign: "left" },
+    { top: mob ? "3%" : "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center" },
+    { top: "50%", right: mob ? "1%" : "4%", transform: "translateY(-50%)", textAlign: "right" },
+    { bottom: mob ? "3%" : "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center" },
+    { top: "50%", left: mob ? "1%" : "4%", transform: "translateY(-50%)", textAlign: "left" },
   ];
   const nodeColors = ["#4a9eff", "#ff9ad1", "#ffb86b", "#9af5c8"];
   return (
@@ -688,24 +733,24 @@ function MechOrbit({ options, onPick, color }) {
       {/* Central planet */}
       <div style={{
         position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: 88, height: 88, borderRadius: "50%",
+        width: mob ? 58 : 88, height: mob ? 58 : 88, borderRadius: "50%",
         background: `radial-gradient(circle at 35% 30%,${c}1e,rgba(3,7,18,.9))`,
         border: `2px solid ${c}44`, boxShadow: `0 0 28px ${c}2e`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 34, animation: "spinSlow 20s linear infinite", zIndex: 2,
+        fontSize: mob ? 24 : 34, animation: "spinSlow 20s linear infinite", zIndex: 2,
       }}>🪐</div>
-      <div style={{ position: "absolute", top: "calc(50% + 50px)", left: "50%", transform: "translateX(-50%)", fontFamily: "'Orbitron',monospace", fontSize: 7.5, color: `${c}44`, letterSpacing: 1.5, whiteSpace: "nowrap", zIndex: 2 }}>KLIK MODUL ORBITAL</div>
+      <div style={{ position: "absolute", top: `calc(50% + ${mob ? 33 : 50}px)`, left: "50%", transform: "translateX(-50%)", fontFamily: "'Orbitron',monospace", fontSize: 7.5, color: `${c}44`, letterSpacing: 1.5, whiteSpace: "nowrap", zIndex: 2 }}>KLIK MODUL ORBITAL</div>
       {options.map((opt, i) => (
-        <div key={i} style={{ position: "absolute", ...positions[i], zIndex: 3, maxWidth: 180 }}>
+        <div key={i} style={{ position: "absolute", ...positions[i], zIndex: 3, maxWidth: mob ? 128 : 180 }}>
           <button onClick={() => onPick(opt)}
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
             style={{
               background: hovered === i ? `${nodeColors[i]}22` : `${nodeColors[i]}0c`,
               border: `2px solid ${hovered === i ? nodeColors[i] : `${nodeColors[i]}44`}`,
-              borderRadius: 12, padding: "9px 12px",
+              borderRadius: 12, padding: mob ? "7px 8px" : "9px 12px",
               color: "#e8f0ff", fontFamily: "'Exo 2',sans-serif",
-              fontSize: 11.5, fontWeight: 600, cursor: "pointer",
+              fontSize: mob ? 10 : 11.5, fontWeight: 600, cursor: "pointer",
               transition: "all .2s", lineHeight: 1.35,
               boxShadow: hovered === i ? `0 0 26px ${nodeColors[i]}44` : "none",
               width: "100%",
@@ -722,7 +767,7 @@ function MechOrbit({ options, onPick, color }) {
 // ════════════════════════════════════════════════════════════
 // GAME MECHANIC 7 — HOLD TO LAUNCH (moon)
 // ════════════════════════════════════════════════════════════
-function MechHold({ options, onPick, color }) {
+function MechHold({ options, onPick, color, mob }) {
   const c = color || "#ffd36e";
   const FILL_MS = 1700;
   const [charges, setCharges] = useState(options.map(() => 0));
@@ -759,7 +804,7 @@ function MechHold({ options, onPick, color }) {
       <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", fontFamily: "'Orbitron',monospace", fontSize: 8.5, color: `${c}66`, letterSpacing: 2, whiteSpace: "nowrap", zIndex: 2 }}>
         🚀 TAHAN TOMBOL PILIHANMU HINGGA 100%
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, padding: "30px 20px 16px", zIndex: 2, width: "100%", maxWidth: 640 }}>
+      <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: mob ? 9 : 14, padding: mob ? "28px 14px 10px" : "30px 20px 16px", zIndex: 2, width: "100%", maxWidth: mob ? "100%" : 640, overflow: mob ? "auto" : undefined }}>
         {options.map((opt, i) => {
           const pct = charges[i];
           const nc = nodeColors[i];
@@ -771,7 +816,7 @@ function MechHold({ options, onPick, color }) {
                 onPointerUp={() => stopCharge(i)}
                 onPointerLeave={() => stopCharge(i)}
                 style={{
-                  width: "100%", minHeight: 86,
+                  width: "100%", minHeight: mob ? 62 : 86,
                   background: active ? `${nc}10` : "rgba(255,255,255,.03)",
                   border: `2px solid ${active ? nc : `${nc}28`}`,
                   borderRadius: 14, padding: "13px 15px",
@@ -838,6 +883,7 @@ export default function OrbitRocketAdventure() {
   const [traveling, setTraveling] = useState(false);
   const [nextPlanet, setNextPlanet] = useState(null);
 
+  const mob = useIsMobile();
   const planet = PLANETS[planetIdx];
   const persona = useMemo(() => computeResult(scores), [scores]);
   const pStream = STREAMS[persona.stream];
@@ -922,14 +968,14 @@ export default function OrbitRocketAdventure() {
       {screen === "intro" && (
         <div style={{
           position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-          background: BG, overflow: "auto",
+          background: BG, overflow: "auto", color: "#e8f0ff", fontFamily: "'Exo 2', sans-serif",
         }}>
           <Starfield count={70} fixed />
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 580, width: "100%", padding: "24px 20px", animation: "rise .6s ease both" }}>
             <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", letterSpacing: 3, color: "rgba(127,212,255,.42)", marginBottom: 10 }}>BINUS @BEKASI — BUSINESS IT PROGRAM</div>
-            <div style={{ fontSize: 72, marginBottom: 4, animation: "rocketBounce 3s ease-in-out infinite" }}>🚀</div>
-            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 50, fontWeight: 900, letterSpacing: 6, margin: "6px 0 2px", color: "#7fd4ff", textShadow: "0 0 36px rgba(127,212,255,.55),0 0 80px rgba(127,212,255,.2)" }}>ORBIT</h1>
-            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 10.5, letterSpacing: 4, color: "#4a8fff", marginBottom: 18 }}>ROCKET ADVENTURE</div>
+            <div style={{ fontSize: mob ? 52 : 72, marginBottom: 4, animation: "rocketBounce 3s ease-in-out infinite" }}>🚀</div>
+            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: mob ? 36 : 50, fontWeight: 900, letterSpacing: mob ? 3 : 6, margin: "6px 0 2px", color: "#7fd4ff", textShadow: "0 0 36px rgba(127,212,255,.55),0 0 80px rgba(127,212,255,.2)" }}>ORBIT</h1>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: mob ? 8.5 : 10.5, letterSpacing: mob ? 2.5 : 4, color: "#4a8fff", marginBottom: 18 }}>ROCKET ADVENTURE</div>
             <div style={{ height: 1, width: 80, margin: "0 auto 20px", background: "linear-gradient(90deg,transparent,#7fd4ff,transparent)" }} />
             <p style={{ fontSize: 15, lineHeight: 1.78, opacity: .9, maxWidth: 420, margin: "0 auto 16px" }}>
               Jadilah <b style={{ color: "#7fd4ff" }}>pilot roket</b> menjelajahi <b style={{ color: "#ffd36e" }}>7 planet cosmos</b> Business IT. Tiap planet punya game berbeda — terbang, tembak, seret, orbit, dan lebih!
@@ -937,7 +983,7 @@ export default function OrbitRocketAdventure() {
             {/* Mini-game list */}
             <div style={{ margin: "0 auto 20px", maxWidth: 420, background: "rgba(127,212,255,.05)", border: "1px solid rgba(127,212,255,.15)", borderRadius: 14, padding: "14px 18px", fontSize: 13, lineHeight: 1.8, textAlign: "left" }}>
               <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 8, color: "#7fd4ff", letterSpacing: 2, marginBottom: 10 }}>🎮 MINI-GAMES PER PLANET</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: mob ? "5px" : "2px 12px" }}>
                 <div>🌍 <b style={{ color: "#4a9eff" }}>Klik Orb Melayang</b></div>
                 <div>🌌 <b style={{ color: "#ff9ad1" }}>Drag & Drop Sinyal</b></div>
                 <div>☄️ <b style={{ color: "#ffb86b" }}>Tembak Asteroid!</b></div>
@@ -965,16 +1011,21 @@ export default function OrbitRocketAdventure() {
       {screen === "game" && (
         <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: BG, overflow: "hidden" }}>
           {/* Top: Space Map */}
-          <SpaceMap currentIdx={planetIdx} rocketPos={rocketPos} traveling={traveling} />
+          <SpaceMap currentIdx={planetIdx} rocketPos={rocketPos} traveling={traveling} mob={mob} />
 
-          {/* Bottom: Left cockpit + Right arena */}
-          <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+          {/* Middle + Bottom: Cockpit (left/bottom) + Arena (right/top) */}
+          <div style={{ flex: 1, display: "flex", flexDirection: mob ? "column" : "row", overflow: "hidden", minHeight: 0 }}>
 
-            {/* ─── LEFT COCKPIT PANEL ─── */}
+            {/* ─── COCKPIT PANEL (left on desktop, bottom on mobile) ─── */}
             <div style={{
-              width: 345, flexShrink: 0, display: "flex", flexDirection: "column",
+              order: mob ? 2 : 0,
+              width: mob ? "100%" : 345, flexShrink: 0,
+              maxHeight: mob ? 278 : "none",
+              display: "flex", flexDirection: "column",
               background: "linear-gradient(180deg,rgba(4,9,22,.99),rgba(2,6,16,1))",
-              borderRight: "1px solid rgba(127,212,255,.1)", overflow: "hidden", minHeight: 0,
+              borderRight: mob ? "none" : "1px solid rgba(127,212,255,.1)",
+              borderTop: mob ? "1px solid rgba(127,212,255,.13)" : "none",
+              overflow: "hidden", minHeight: 0,
             }}>
               {/* Planet header bar */}
               <div style={{
@@ -1029,11 +1080,11 @@ export default function OrbitRocketAdventure() {
             </div>
 
             {/* ─── GAME ARENA ─── */}
-            <div style={{ flex: 1, position: "relative", overflow: "hidden", background: "radial-gradient(140% 140% at 50% 50%,rgba(10,18,42,.88),rgba(2,5,18,1))" }}>
+            <div style={{ order: mob ? 1 : 0, flex: 1, position: "relative", overflow: "hidden", background: "radial-gradient(140% 140% at 50% 50%,rgba(10,18,42,.88),rgba(2,5,18,1))", minHeight: mob ? 200 : 0 }}>
               {subPhase === "dialog" && <PlanetScene planet={planet} />}
               {subPhase === "traveling" && <TravelingScene nextPlanet={nextPlanet} />}
               {subPhase === "choosing" && GameMechanic && (
-                <GameMechanic key={`gm-${planetIdx}`} options={planet.options} onPick={pick} color={planet.color} />
+                <GameMechanic key={`gm-${planetIdx}`} options={planet.options} onPick={pick} color={planet.color} mob={mob} />
               )}
             </div>
           </div>
@@ -1042,25 +1093,25 @@ export default function OrbitRocketAdventure() {
 
       {/* ════ RESULT ════ */}
       {screen === "result" && (
-        <div style={{ position: "fixed", inset: 0, background: BG, overflow: "auto", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
+        <div style={{ position: "fixed", inset: 0, background: BG, overflow: "auto", display: "flex", justifyContent: "center", alignItems: "flex-start", color: "#e8f0ff", fontFamily: "'Exo 2', sans-serif" }}>
           <Starfield count={65} fixed />
           <div style={{ position: "relative", zIndex: 2, maxWidth: 780, width: "100%", padding: "24px 20px", animation: "rise .65s ease both" }}>
-            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 8, letterSpacing: 3, color: "rgba(127,212,255,.48)", textAlign: "center", marginBottom: 14 }}>✦ MISI SELESAI — PROFESI TERIDENTIFIKASI ✦</div>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 8, letterSpacing: 3, color: "rgba(127,212,255,.85)", textAlign: "center", marginBottom: 14 }}>✦ MISI SELESAI — PROFESI TERIDENTIFIKASI ✦</div>
 
             {/* Score bar */}
             <div style={{ display: "flex", justifyContent: "center", gap: 0, marginBottom: 18, background: "rgba(127,212,255,.05)", border: "1px solid rgba(127,212,255,.13)", borderRadius: 12, overflow: "hidden" }}>
               {[["FINAL SCORE", String(score), "#ffd36e"], ["PLANETS VISITED", "7 / 7", "#7fd4ff"], ["SPEED STREAK", speedStreak >= 3 ? `${speedStreak}×🔥` : "—", "#ffb86b"]].map(([label, val, col], i) => (
                 <div key={i} style={{ flex: 1, textAlign: "center", padding: "10px 8px", borderRight: i < 2 ? "1px solid rgba(127,212,255,.1)" : "none" }}>
-                  <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 7, color: "#4a8fff", letterSpacing: 1 }}>{label}</div>
-                  <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 20, fontWeight: 700, color: col, marginTop: 2 }}>{val}</div>
+                  <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 7, color: "#7fb8ff", letterSpacing: 1 }}>{label}</div>
+                  <div style={{ fontFamily: "'Orbitron',monospace", fontSize: mob ? 15 : 20, fontWeight: 700, color: col, marginTop: 2 }}>{val}</div>
                 </div>
               ))}
             </div>
 
-            {/* Persona + details two-column */}
-            <div style={{ display: "flex", gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
-              {/* Left badge */}
-              <div style={{ flex: "0 0 210px", textAlign: "center" }}>
+            {/* Persona + details */}
+            <div style={{ display: "flex", gap: 18, alignItems: "flex-start", flexWrap: "wrap", flexDirection: mob ? "column" : "row" }}>
+              {/* Badge */}
+              <div style={{ flex: mob ? "0 0 auto" : "0 0 210px", width: mob ? "100%" : undefined, textAlign: "center" }}>
                 <div style={{ position: "relative", display: "inline-block", margin: "0 0 12px", animation: "pop .7s ease both" }}>
                   <div style={{ position: "absolute", inset: -22, borderRadius: "50%", background: `radial-gradient(circle,${persona.glow}2e,transparent 62%)`, animation: "spinSlow 12s linear infinite" }} />
                   <div style={{
@@ -1076,34 +1127,34 @@ export default function OrbitRocketAdventure() {
                   </div>
                 </div>
                 <h2 style={{ fontFamily: "'Orbitron',monospace", fontSize: 15, fontWeight: 700, color: persona.glow, margin: "0 0 3px", lineHeight: 1.2 }}>{persona.name}</h2>
-                <p style={{ fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", opacity: .68, margin: "0 0 10px", fontWeight: 600 }}>{persona.role}</p>
+                <p style={{ fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,.82)", margin: "0 0 10px", fontWeight: 600 }}>{persona.role}</p>
                 <div style={{ display: "inline-block", fontSize: 11.5, fontWeight: 700, color: pStream.fg, background: pStream.tint, borderRadius: 30, padding: "5px 14px", marginBottom: 12, boxShadow: `0 0 18px ${pStream.tint}50` }}>✦ {pStream.short}</div>
-                <div style={{ fontSize: 12, lineHeight: 1.65, fontWeight: 600, background: "rgba(127,212,255,.05)", border: "1px dashed rgba(127,212,255,.28)", borderRadius: 10, padding: "8px 10px" }}>
+                <div style={{ fontSize: 12, lineHeight: 1.65, fontWeight: 600, color: "rgba(255,255,255,.88)", background: "rgba(127,212,255,.08)", border: "1px dashed rgba(127,212,255,.4)", borderRadius: 10, padding: "8px 10px" }}>
                   📸 Foto & tukar <b style={{ color: "#7fd4ff" }}>PIN {persona.role}</b>!
                 </div>
               </div>
 
               {/* Right details */}
               <div style={{ flex: 1, minWidth: 260 }}>
-                <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: "13px 14px", marginBottom: 13 }}>
-                  <p style={{ fontSize: 14, lineHeight: 1.72, margin: 0, fontStyle: "italic", opacity: .88, fontFamily: "'Exo 2',sans-serif" }}>{persona.fortune}</p>
+                <div style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 12, padding: "13px 14px", marginBottom: 13 }}>
+                  <p style={{ fontSize: 14, lineHeight: 1.72, margin: 0, fontStyle: "italic", color: "rgba(255,255,255,.92)", fontFamily: "'Exo 2',sans-serif" }}>{persona.fortune}</p>
                 </div>
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", color: "rgba(127,212,255,.42)", letterSpacing: 1.5, marginBottom: 7 }}>MATA KULIAH YANG MENANTIMU</div>
+                  <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", color: "rgba(127,212,255,.82)", letterSpacing: 1.5, marginBottom: 7 }}>MATA KULIAH YANG MENANTIMU</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {persona.courses.map((c, i) => <span key={i} style={{ fontSize: 11.5, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: `${persona.glow}14`, border: `1px solid ${persona.glow}40`, color: "#fff", fontFamily: "'Exo 2',sans-serif" }}>{c}</span>)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", color: "rgba(127,212,255,.42)", letterSpacing: 1.5, marginBottom: 6 }}>JALUR KARIER</div>
+                  <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", color: "rgba(127,212,255,.82)", letterSpacing: 1.5, marginBottom: 6 }}>JALUR KARIER</div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: persona.glow, margin: 0, lineHeight: 1.58, fontFamily: "'Exo 2',sans-serif" }}>{persona.prospek}</p>
                 </div>
               </div>
             </div>
 
             <div style={{ textAlign: "center", marginTop: 22 }}>
-              <button onClick={startGame} style={{ fontFamily: "'Orbitron',monospace", fontWeight: 700, fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.68)", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.16)", padding: "11px 28px", borderRadius: 40, cursor: "pointer", transition: "all .2s" }}>↩ RESTART MISSION</button>
-              <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, letterSpacing: 4, color: "rgba(127,212,255,.4)", marginTop: 16 }}>ORBIT ROCKET ADVENTURE</div>
+              <button onClick={startGame} style={{ fontFamily: "'Orbitron',monospace", fontWeight: 700, fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.88)", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.28)", padding: "11px 28px", borderRadius: 40, cursor: "pointer", transition: "all .2s" }}>↩ RESTART MISSION</button>
+              <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, letterSpacing: 4, color: "rgba(127,212,255,.65)", marginTop: 16 }}>ORBIT ROCKET ADVENTURE</div>
             </div>
           </div>
         </div>
