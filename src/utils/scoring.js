@@ -19,6 +19,15 @@ export const calculateScores = (interactions) => {
     return scores;
   }
 
+  // Stage weight multipliers: later stages carry more insight
+  const STAGE_WEIGHTS = [1, 1.2, 1.2, 1.5, 1.5, 1.8, 1.8];
+
+  const applyScore = (archetype, points, stage) => {
+    if (!archetype || !scores.hasOwnProperty(archetype)) return;
+    const weight = STAGE_WEIGHTS[stage] ?? 1;
+    scores[archetype] += points * weight;
+  };
+
   // Process each interaction and add points
   interactions.forEach((interaction) => {
     const { type, value = {}, stage } = interaction || {};
@@ -28,31 +37,16 @@ export const calculateScores = (interactions) => {
       case 'cardDraw':
         // Card drawing interaction
         if (value.archetype) {
-          scores[value.archetype] += value.points || 1;
+          applyScore(value.archetype, value.points || 1, stage);
         }
         break;
         
       case 'cloudReach':
-        // Cloud reaching interaction
-        if (value.height) {
-          // Higher reaches = more ambitious traits
-          if (value.height >= 80) {
-            scores.trail += 2; // Pioneer likes to reach high
-            scores.create += 1;
-          } else if (value.height >= 50) {
-            scores.strat += 2; // Strategist likes medium-high planning
-            scores.tech += 1;
-          } else {
-            scores.design += 1; // Designer appreciates grounded beauty
-            scores.change += 1; // Changemaker values foundation
-          }
-        }
-        if (value.speed) {
-          // Quick reaches = energetic traits
-          if (value.speed > 0.7) {
-            scores.trail += 1;
-            scores.create += 1;
-          }
+        // Cloud reaching interaction — use the archetype the user jumped to
+        applyScore(value.archetype, 2, stage);
+        if (value.speed && value.speed > 0.7) {
+          applyScore('trail', 1, stage);
+          applyScore('create', 1, stage);
         }
         break;
         
@@ -60,102 +54,60 @@ export const calculateScores = (interactions) => {
         // Constellation aiming interaction
         if (value.pattern) {
           switch (value.pattern) {
-            case 'trailblazer': // Zigzag pattern
-              scores.trail += 2;
-              scores.create += 1;
-              break;
-            case 'builder': // Block/structure pattern
-              scores.tech += 2;
-              scores.strat += 1;
-              break;
-            case 'creator': // Flowing/artistic pattern
-              scores.create += 2;
-              scores.design += 1;
-              break;
-            case 'harmony': // Circular/bonding pattern
-              scores.design += 2;
-              scores.change += 1;
-              break;
-            case 'growth': // Branching/expanding pattern
-              scores.change += 2;
-              scores.tech += 1;
-              break;
-            case 'strategist': // Geometric/precise pattern
-              scores.strat += 2;
-              scores.tech += 1;
-              break;
+            case 'trailblazer': applyScore('trail', 2, stage); applyScore('create', 1, stage); break;
+            case 'builder':     applyScore('tech', 2, stage);  applyScore('strat', 1, stage);  break;
+            case 'creator':     applyScore('create', 2, stage); applyScore('design', 1, stage); break;
+            case 'harmony':     applyScore('design', 2, stage); applyScore('change', 1, stage); break;
+            case 'growth':      applyScore('change', 2, stage); applyScore('tech', 1, stage);   break;
+            case 'strategist':  applyScore('strat', 2, stage);  applyScore('tech', 1, stage);   break;
           }
         }
-        if (value.accuracy) {
-          // Precise aiming = strategic/technical traits
-          if (value.accuracy > 0.8) {
-            scores.strat += 1;
-            scores.tech += 1;
-          }
+        if (value.accuracy && value.accuracy > 0.8) {
+          applyScore('strat', 1, stage);
+          applyScore('tech', 1, stage);
         }
         break;
         
-      case 'dreamRiver':
-        // Dream river path choice
-        if (value.path) {
-          switch (value.path) {
-            case 'innovation': // Bright, flashing path
-              scores.create += 2;
-              scores.design += 1;
-              break;
-            case 'wisdom': // Glowing, steady path
-              scores.strat += 2;
-              scores.tech += 1;
-              break;
-            case 'compassion': // Soft, warm path
-              scores.change += 2;
-              scores.design += 1;
-              break;
-            case 'adventure': // Winding, mysterious path
-              scores.trail += 2;
-              scores.create += 1;
-              break;
+      case 'dreamRiver': {
+        // Dream river — all three step choices sent as value.paths array
+        const pathList = Array.isArray(value.paths)
+          ? value.paths
+          : value.path ? [{ path: value.path, archetype: value.archetype }] : [];
+        pathList.forEach(({ path, archetype: pArch }) => {
+          applyScore(pArch, 2, stage);
+          switch (path) {
+            case 'innovation': applyScore('design', 1, stage); break;
+            case 'wisdom':     applyScore('tech', 1, stage);   break;
+            case 'compassion': applyScore('design', 1, stage); break;
+            case 'adventure':  applyScore('create', 1, stage); break;
+            case 'cross':      applyScore('trail', 1, stage);  break;
+            case 'negotiate':  applyScore('strat', 1, stage);  break;
+            case 'fly':        applyScore('trail', 1, stage);  break;
+            case 'help':       applyScore('design', 1, stage); break;
+            case 'reflection': applyScore('strat', 1, stage);  break;
+            case 'map':        applyScore('tech', 1, stage);   break;
+            case 'stars':      applyScore('create', 1, stage); break;
+            case 'lotus':      applyScore('tech', 1, stage);   break;
           }
-        }
+        });
         break;
+      }
         
       case 'wishTree':
         // Wish tree interaction
         if (value.category) {
           switch (value.category) {
-            case 'success': // Achievement wishes
-              scores.trail += 2;
-              scores.strat += 1;
-              break;
-            case 'love': // Relationship wishes
-              scores.design += 2;
-              scores.change += 1;
-              break;
-            case 'adventure': // Exploration wishes
-              scores.trail += 2;
-              scores.create += 1;
-              break;
-            case 'wisdom': // Knowledge wishes
-              scores.strat += 2;
-              scores.tech += 1;
-              break;
-            case 'healing': // Help others wishes
-              scores.change += 2;
-              scores.design += 1;
-              break;
-            case 'innovation': // New ideas wishes
-              scores.create += 2;
-              scores.trail += 1;
-              break;
+            case 'success':    applyScore('trail', 2, stage);  applyScore('strat', 1, stage);  break;
+            case 'love':       applyScore('design', 2, stage); applyScore('change', 1, stage); break;
+            case 'adventure':  applyScore('trail', 2, stage);  applyScore('create', 1, stage); break;
+            case 'wisdom':     applyScore('strat', 2, stage);  applyScore('tech', 1, stage);   break;
+            case 'healing':    applyScore('change', 2, stage); applyScore('design', 1, stage); break;
+            case 'innovation': applyScore('create', 2, stage); applyScore('trail', 1, stage);  break;
           }
         }
-        // Depth of intention matters
-        if (value.depth) {
-          if (value.depth > 0.7) {
-            // Deep wishes indicate reflective types
-            scores.design += 1;
-            scores.strat += 1;
-          }
+        if (value.depth && value.depth > 0.7) {
+          applyScore('design', 1, stage);
+          applyScore('strat', 1, stage);
         }
         break;
         
@@ -163,38 +115,17 @@ export const calculateScores = (interactions) => {
         // Moon mirror reflection
         if (value.reflection) {
           switch (value.reflection) {
-            case 'leader': // Crown/reflection of authority
-              scores.trail += 2;
-              scores.strat += 1;
-              break;
-            case 'artist': // Palette/reflection of creativity
-              scores.create += 2;
-              scores.design += 1;
-              break;
-            case 'builder': // Tools/reflection of construction
-              scores.tech += 2;
-              scores.design += 1;
-              break;
-            case 'healer': // Hands/reflection of helping
-              scores.change += 2;
-              scores.design += 1;
-              break;
-            case 'planner': // Map/reflection of strategy
-              scores.strat += 2;
-              scores.tech += 1;
-              break;
-            case 'innovator': // Lightbulb/reflection of ideas
-              scores.create += 2;
-              scores.trail += 1;
-              break;
+            case 'leader':    applyScore('trail', 2, stage);  applyScore('strat', 1, stage);  break;
+            case 'artist':    applyScore('create', 2, stage); applyScore('design', 1, stage); break;
+            case 'builder':   applyScore('tech', 2, stage);   applyScore('design', 1, stage); break;
+            case 'healer':    applyScore('change', 2, stage); applyScore('design', 1, stage); break;
+            case 'planner':   applyScore('strat', 2, stage);  applyScore('tech', 1, stage);   break;
+            case 'innovator': applyScore('create', 2, stage); applyScore('trail', 1, stage);  break;
           }
         }
-        if (value.clarity) {
-          // Clear reflection = self-aware types
-          if (value.clarity > 0.8) {
-            scores.design += 1;
-            scores.strat += 1;
-          }
+        if (value.clarity && value.clarity > 0.8) {
+          applyScore('design', 1, stage);
+          applyScore('strat', 1, stage);
         }
         break;
         
@@ -202,40 +133,21 @@ export const calculateScores = (interactions) => {
         // Sunrise path walk
         if (value.focus) {
           switch (value.focus) {
-            case 'horizon': // Looking far ahead
-              scores.trail += 2;
-              scores.strat += 1;
-              break;
-            case 'flowers': // Beauty at feet
-              scores.design += 2;
-              scores.change += 1;
-              break;
-            case 'birds': // Freedom in sky
-              scores.create += 2;
-              scores.trail += 1;
-              break;
-            case 'water': // Reflection and depth
-              scores.strat += 2;
-              scores.tech += 1;
-              break;
-            case 'rocks': // Stability and foundation
-              scores.tech += 2;
-              scores.change += 1;
-              break;
-            case 'light': // Pure inspiration
-              scores.create += 2;
-              scores.design += 1;
-              break;
+            case 'horizon': applyScore('trail', 2, stage);  applyScore('strat', 1, stage);  break;
+            case 'flowers': applyScore('design', 2, stage); applyScore('change', 1, stage); break;
+            case 'birds':   applyScore('create', 2, stage); applyScore('trail', 1, stage);  break;
+            case 'water':   applyScore('strat', 2, stage);  applyScore('tech', 1, stage);   break;
+            case 'rocks':   applyScore('tech', 2, stage);   applyScore('change', 1, stage); break;
+            case 'light':   applyScore('create', 2, stage); applyScore('design', 1, stage); break;
           }
         }
         if (value.pace) {
-          // Walking pace indicates energy type
-          if (value.pace > 0.7) { // Fast walker
-            scores.trail += 1;
-            scores.create += 1;
-          } else if (value.pace < 0.3) { // Slow walker
-            scores.design += 1;
-            scores.change += 1;
+          if (value.pace > 0.7) {
+            applyScore('trail', 1, stage);
+            applyScore('create', 1, stage);
+          } else if (value.pace < 0.3) {
+            applyScore('design', 1, stage);
+            applyScore('change', 1, stage);
           }
         }
         break;
@@ -264,10 +176,27 @@ export const getDominantArchetype = (scores) => {
       maxScore = scores[archetype];
       dominant = archetype;
     }
-    // In case of tie, choose the first in order (consistent with original)
   });
   
   return dominant;
 };
 
-export default { calculateScores, getDominantArchetype };
+/**
+ * Returns the second-highest scoring archetype (different from dominant).
+ */
+export const getSecondaryArchetype = (scores, dominant) => {
+  const archetypes = ['trail', 'tech', 'create', 'design', 'change', 'strat'];
+  let maxScore = -Infinity;
+  let secondary = archetypes.find(a => a !== dominant) || 'tech';
+
+  archetypes.forEach(archetype => {
+    if (archetype !== dominant && scores[archetype] > maxScore) {
+      maxScore = scores[archetype];
+      secondary = archetype;
+    }
+  });
+
+  return secondary;
+};
+
+export default { calculateScores, getDominantArchetype, getSecondaryArchetype };

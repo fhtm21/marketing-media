@@ -65,6 +65,17 @@ export default function StartupDestinyRPG({ onBack }) {
     setShowIntro(false);
   };
 
+  const handleGoBack = () => {
+    if (currentStage === 0) {
+      // Return to intro
+      setShowIntro(true);
+    } else if (currentStage < 7) {
+      // Go back one stage and drop the last interaction
+      setInteractions(prev => prev.slice(0, -1));
+      setCurrentStage(prev => prev - 1);
+    }
+  };
+
   const handleStart = () => {
     setShowIntro(false);
   };
@@ -149,6 +160,23 @@ export default function StartupDestinyRPG({ onBack }) {
         }
         .dream-card:hover {
           transform: translateY(-5px) scale(1.02);
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.4); }
+        }
+        @keyframes floatCloud {
+          0%, 100% { transform: translateX(0) translateY(0); }
+          33% { transform: translateX(8px) translateY(-4px); }
+          66% { transform: translateX(-8px) translateY(4px); }
+        }
+        @keyframes flow {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
       `}</style>
 
@@ -247,10 +275,22 @@ export default function StartupDestinyRPG({ onBack }) {
         left: "50%",
         transform: "translateX(-50%)",
         display: "flex",
-        gap: "12px",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "8px",
         zIndex: 100,
         pointerEvents: "none",
       }}>
+        <div style={{
+          fontFamily: "'Fredoka', sans-serif",
+          fontSize: "13px",
+          fontWeight: 700,
+          color: "rgba(255,255,255,0.85)",
+          letterSpacing: "1px",
+        }}>
+          {Math.round(((currentStage) / 7) * 100)}%
+        </div>
+        <div style={{ display: "flex", gap: "12px" }}>
         {[0, 1, 2, 3, 4, 5, 6].map((stageIndex) => {
           const isActive = stageIndex === currentStage;
           const isCompleted = stageIndex < currentStage;
@@ -294,17 +334,20 @@ export default function StartupDestinyRPG({ onBack }) {
             </div>
           );
         })}
+        </div>
       </div>
 
-      {/* Main content container */}
-      <div style={{
-        width: "100%",
-        maxWidth: "520px",
-        zIndex: 2,
-        opacity: stageTransition ? 0.7 : 1,
-        transition: "opacity 0.3s ease",
-        pointerEvents: "none",
-      }}>
+      {/* Main content container — key forces remount and re-triggers slideIn animation */}
+      <div
+        key={currentStage}
+        className="stage-enter"
+        style={{
+          width: "100%",
+          maxWidth: "520px",
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      >
         <div style={{
           background: "rgba(255,255,255,0.12)",
           borderRadius: "24px",
@@ -318,9 +361,9 @@ export default function StartupDestinyRPG({ onBack }) {
         </div>
       </div>
 
-      {/* Back button */}
+      {/* Back button — goes to previous stage or intro */}
       <button
-        onClick={onBack}
+        onClick={handleGoBack}
         style={{
           position: "absolute",
           top: "20px",

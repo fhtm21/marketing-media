@@ -82,7 +82,7 @@ export default function DreamStage3_ConstellationAim({ onInteraction, stage }) {
               opacity: `${Math.random() * 0.5 + 0.2}`,
               animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
               animationDelay: `${Math.random() * 3}s`,
-            }}
+            }} />
           ))}
         </div>
 
@@ -161,9 +161,10 @@ export default function DreamStage3_ConstellationAim({ onInteraction, stage }) {
                   {star.emoji}
                 </div>
               )}
-             </button>
-           );
-         )}
+            </button>
+          );
+        })}
+      </div>
 
       {completed && activePattern && (
         <div style={{ 

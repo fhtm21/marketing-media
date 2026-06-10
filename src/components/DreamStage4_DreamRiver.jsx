@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 export default function DreamStage4_DreamRiver({ onInteraction, stage }) {
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState(null);
+  const [choices, setChoices] = useState([]);
 
   const steps = [
     {
@@ -36,21 +37,25 @@ export default function DreamStage4_DreamRiver({ onInteraction, stage }) {
 
   const handleChoice = useCallback((opt) => {
     setSelected(opt);
+    const nextChoices = [...choices, { path: opt.id, archetype: opt.archetype }];
+    setChoices(nextChoices);
     setTimeout(() => {
-      onInteraction({
-        type: "dreamRiver",
-        stage,
-        value: { path: opt.id, archetype: opt.archetype, step }
-      });
-      
       if (step < steps.length - 1) {
+        // More steps remain — just advance locally
         setTimeout(() => {
           setStep(s => s + 1);
           setSelected(null);
         }, 400);
+      } else {
+        // Final step — send one interaction with all choices
+        onInteraction({
+          type: "dreamRiver",
+          stage,
+          value: { paths: nextChoices }
+        });
       }
     }, 300);
-  }, [onInteraction, stage, step]);
+  }, [onInteraction, stage, step, choices]);
 
   const q = steps[step];
 

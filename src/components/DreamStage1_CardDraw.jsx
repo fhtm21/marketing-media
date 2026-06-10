@@ -104,7 +104,7 @@ export default function DreamStage1_CardDraw({ onInteraction, stage }) {
                 textAlign: "center",
                 lineHeight: "1.4",
               }}>{isDrawn ? card.desc : "Sentuh untuk memilih"}</div>
-{!isDrawn && (
+              {!isDrawn && (
                 <div style={{
                   position: "absolute",
                   top: "0",
@@ -114,7 +114,7 @@ export default function DreamStage1_CardDraw({ onInteraction, stage }) {
                   background: card.archetype === 'trail' ? 'rgba(255,122,89,0.1)' : card.archetype === 'tech' ? 'rgba(91,140,255,0.1)' : card.archetype === 'create' ? 'rgba(255,90,168,0.1)' : 'rgba(176,107,255,0.1)',
                   opacity: 0,
                   transition: "opacity 0.3s",
-                 }} >
+                }} />
               )}
             </button>
           );

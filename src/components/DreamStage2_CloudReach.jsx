@@ -109,7 +109,7 @@ export default function DreamStage2_CloudReach({ onInteraction, stage }) {
               borderRadius: "50%",
               animation: `floatCloud ${12 + i * 2}s ease-in-out infinite`,
               animationDelay: `${i * 2}s`,
-            }}
+            }} />
           ))}
         </div>
 
@@ -134,7 +134,7 @@ export default function DreamStage2_CloudReach({ onInteraction, stage }) {
               opacity: 0.6,
               animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
               animationDelay: `${Math.random() * 3}s`,
-            }}
+            }} />
           ))}
         </div>
 
@@ -206,7 +206,7 @@ export default function DreamStage2_CloudReach({ onInteraction, stage }) {
             boxShadow: "0 0 8px rgba(102,126,234,0.3)",
           }} />
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "rgba(160, 55, 154, 0.7) }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "rgba(160, 55, 154, 0.7)" }}>
           <span>Dasar</span>
           <span>{progress >= 100 ? "Puncak!" : `${Math.round(progress)}%`}</span>
         </div>
