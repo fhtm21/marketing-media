@@ -242,7 +242,7 @@ function MissionMap({ areas, currentAreaIndex, landedAreaIndex, rocketPos, isTra
   );
 }
 
-export default function OrbitRocketAdventure() {
+export default function OrbitRocketAdventure({ onBack }) {
   const [screen, setScreen] = useState("intro");
   const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
   const [landedAreaIndex, setLandedAreaIndex] = useState(null);
@@ -360,21 +360,40 @@ export default function OrbitRocketAdventure() {
             <p style={{ opacity: 0.88, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 18px" }}>
               Mini-game eksplorasi 4 planet: klik planet untuk berpindah, lalu drag modul keputusan ke jalur pilihan guide di setiap planet.
             </p>
-            <button
-              onClick={startMission}
-              style={{
-                border: "none",
-                background: "linear-gradient(135deg,#a8ecff,#7fd4ff)",
-                color: "#07203f",
-                fontWeight: 700,
-                borderRadius: 34,
-                padding: "13px 30px",
-                cursor: "pointer",
-                fontSize: 15,
-              }}
-            >
-              Mulai Misi Interaktif
-            </button>
+            <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  style={{
+                    border: "1.5px solid rgba(127,212,255,.4)",
+                    background: "rgba(127,212,255,.08)",
+                    color: "#a8ecff",
+                    fontWeight: 700,
+                    borderRadius: 34,
+                    padding: "13px 24px",
+                    cursor: "pointer",
+                    fontSize: 15,
+                  }}
+                >
+                  ← Pilih Game Lain
+                </button>
+              )}
+              <button
+                onClick={startMission}
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg,#a8ecff,#7fd4ff)",
+                  color: "#07203f",
+                  fontWeight: 700,
+                  borderRadius: 34,
+                  padding: "13px 30px",
+                  cursor: "pointer",
+                  fontSize: 15,
+                }}
+              >
+                Mulai Misi Interaktif
+              </button>
+            </div>
           </div>
         )}
 
@@ -568,20 +587,38 @@ export default function OrbitRocketAdventure() {
 
             <p style={{ margin: "0 0 14px", color: result.glow, fontWeight: 600 }}>{result.prospek}</p>
 
-            <button
-              onClick={restart}
-              style={{
-                border: "1.5px solid rgba(255,255,255,.3)",
-                background: "rgba(255,255,255,.07)",
-                color: "#f2f8ff",
-                fontWeight: 700,
-                borderRadius: 28,
-                padding: "11px 22px",
-                cursor: "pointer",
-              }}
-            >
-              Ulangi Misi
-            </button>
+            <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+              <button
+                onClick={restart}
+                style={{
+                  border: "1.5px solid rgba(255,255,255,.3)",
+                  background: "rgba(255,255,255,.07)",
+                  color: "#f2f8ff",
+                  fontWeight: 700,
+                  borderRadius: 28,
+                  padding: "11px 22px",
+                  cursor: "pointer",
+                }}
+              >
+                Ulangi Misi
+              </button>
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  style={{
+                    border: "1.5px solid rgba(127,212,255,.4)",
+                    background: "rgba(127,212,255,.08)",
+                    color: "#a8ecff",
+                    fontWeight: 700,
+                    borderRadius: 28,
+                    padding: "11px 22px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ← Kembali ke Hub
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

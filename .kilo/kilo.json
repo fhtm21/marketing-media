@@ -1,0 +1,9 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "indexing": {
+    "enabled": false
+  },
+  "commit_message": {
+    "prompt": ""
+  }
+}
