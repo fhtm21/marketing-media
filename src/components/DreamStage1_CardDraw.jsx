@@ -1,146 +1,184 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 
-export default function DreamStage1_CardDraw({ onInteraction, stage }) {
+// Stage 1 — Card Draw
+// Q: "Pas punya ide bisnis, hal pertama yang kamu lakuin?"
+// Scoring: trail | design | tech | strat
+
+const CARDS = [
+  {
+    key: "trail",
+    frontEmoji: "🚀",
+    title: "Kartu Fajar",
+    subtitle: "The Pioneer",
+    desc: "Langsung eksekusi, mikir belakangan",
+    color: "#ff7a59",
+    floatAnim: "cf0",
+    delay: "0s",
+  },
+  {
+    key: "design",
+    frontEmoji: "✨",
+    title: "Kartu Jiwa",
+    subtitle: "The Innovator",
+    desc: "Sketsa tampilan & rasanya buat user",
+    color: "#b06bff",
+    floatAnim: "cf1",
+    delay: "0.3s",
+  },
+  {
+    key: "tech",
+    frontEmoji: "👑",
+    title: "Kartu Warisan",
+    subtitle: "The Successor",
+    desc: "Rapihin & kembangin yang sudah ada",
+    color: "#5b8cff",
+    floatAnim: "cf2",
+    delay: "0.6s",
+  },
+  {
+    key: "strat",
+    frontEmoji: "📈",
+    title: "Kartu Strategi",
+    subtitle: "The Strategist",
+    desc: "Hitung dulu: bisa cuan & jalan nggak?",
+    color: "#ffb020",
+    floatAnim: "cf3",
+    delay: "0.9s",
+  },
+];
+
+export default function DreamStage1_CardDraw({ onComplete }) {
   const [selected, setSelected] = useState(null);
-  const [drawn, setDrawn] = useState([]);
+  const [revealed, setRevealed] = useState(false);
 
-  const cards = [
-    { id: 1, emoji: "🚀", title: "Perintis", archetype: "trail", desc: "Mulai dari nol" },
-    { id: 2, emoji: "⚡", title: "Penerus", archetype: "tech", desc: "Bangun dari warisan" },
-    { id: 3, emoji: "🎨", title: "Kreator", archetype: "create", desc: "Ide baru" },
-    { id: 4, emoji: "💎", title: "Inovator", archetype: "design", desc: "Detail sempurna" },
-  ];
-
-  const drawCard = useCallback((card) => {
-    if (drawn.length >= 3 || drawn.some(d => d.id === card.id)) return;
-    
-    const newDrawn = [...drawn, card];
-    setDrawn(newDrawn);
-    
-    if (newDrawn.length === 3) {
-      setTimeout(() => {
-        const archetype = newDrawn[0].archetype;
-        onInteraction({
-          type: "cardDraw",
-          stage,
-          value: { archetype, cards: newDrawn, points: 1 }
-        });
-      }, 300);
-    }
-  }, [drawn, onInteraction, stage]);
+  const pick = (card) => {
+    if (selected) return;
+    setSelected(card);
+    setTimeout(() => setRevealed(true), 420);
+    setTimeout(() => onComplete(card.key), 1700);
+  };
 
   return (
-    <div style={{ padding: "24px", maxWidth: "500px", margin: "0 auto", minHeight: "60vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ marginBottom: "24px", textAlign: "center" }}>
-        <div style={{ fontSize: "48px", marginBottom: "12px" }}>✨</div>
-        <h2 style={{
-          fontFamily: "'Fredoka', sans-serif",
-          fontSize: "22px",
-          fontWeight: 800,
-          color: "#a0379a",
-          margin: "0 0 8px",
-          textAlign: "center",
-        }}>Pilih 3 Mimpi yang Berlapis</h2>
-        <p style={{ fontSize: "15px", color: "rgba(160, 55, 154, 0.7)", margin: 0, maxWidth: "300px", textAlign: "center" }}>
-          Setiap mimpi mengungkap aspek kepribadian foundermu
-        </p>
-      </div>
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <style>{`
+        @keyframes cf0 { 0%,100%{transform:translateY(0) rotate(-4deg)} 50%{transform:translateY(-16px) rotate(3deg)} }
+        @keyframes cf1 { 0%,100%{transform:translateY(-5px) rotate(2deg)} 50%{transform:translateY(10px) rotate(-3deg)} }
+        @keyframes cf2 { 0%,100%{transform:translateY(3px) rotate(-2deg)} 50%{transform:translateY(-14px) rotate(4deg)} }
+        @keyframes cf3 { 0%,100%{transform:translateY(-2px) rotate(3deg)} 50%{transform:translateY(-18px) rotate(-2deg)} }
+        @keyframes cardReveal { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+        .dcard-btn { cursor:pointer; transition: box-shadow .25s, opacity .4s; border:none; padding:0; }
+        .dcard-btn:hover:not(:disabled) { filter: brightness(1.15); }
+      `}</style>
 
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
-        {cards.map((card) => {
-          const isDrawn = drawn.some(d => d.id === card.id);
+      <p style={{
+        fontSize: 11, letterSpacing: 3, textTransform: "uppercase",
+        color: "#c4a8ff", fontWeight: 700, margin: "0 0 10px", opacity: .85,
+      }}>
+        ✦ Langkah 1 dari 7 — Kartu Takdir ✦
+      </p>
+      <h2 style={{
+        fontFamily: "'Fredoka', sans-serif", fontSize: 22, fontWeight: 700,
+        color: "#fff", margin: "0 0 6px", textShadow: "0 2px 18px rgba(196,168,255,.5)",
+      }}>
+        Dari Bintang Mana Mimpimu?
+      </h2>
+      <p style={{ fontSize: 13.5, color: "#c4a8ff", fontWeight: 600, margin: "0 0 28px", opacity: .9 }}>
+        Pas punya ide bisnis, hal pertama yang kamu lakuin?
+      </p>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center", padding: "0 4px" }}>
+        {CARDS.map((card) => {
+          const isSelected = selected?.key === card.key;
+          const isDimmed = selected && !isSelected;
           return (
             <button
-              key={card.id}
-              onClick={() => drawCard(card)}
-              disabled={isDrawn || drawn.length >= 3}
+              key={card.key}
+              className="dcard-btn"
+              onClick={() => pick(card)}
+              disabled={!!selected}
               style={{
-                background: isDrawn 
-                  ? `linear-gradient(145deg, #fff, #f0f0f0)`
-                  : `linear-gradient(145deg, #ffffff, #e6e6e6)`,
-                border: isDrawn 
-                  ? `3px solid ${card.archetype === 'trail' ? '#ff7a59' : 
-                     card.archetype === 'tech' ? '#5b8cff' : 
-                     card.archetype === 'create' ? '#ff5fa8' : '#b06bff'}`
-                  : "2px solid #e0e0e0",
-                borderRadius: "20px",
-                padding: "20px",
-                cursor: drawn.length >= 3 || isDrawn ? "default" : "pointer",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                transform: isDrawn ? "translateY(-2px)" : "translateY(0)",
-                boxShadow: isDrawn 
-                  ? `0 12px 24px ${card.archetype === 'trail' ? '#ff7a5933' : card.archetype === 'tech' ? '#5b8cff33' : card.archetype === 'create' ? '#ff5fa833' : '#b06bff33'}`
-                  : "0 6px 12px rgba(0,0,0,0.1)",
-                position: "relative",
-                overflow: "hidden",
-                minHeight: "120px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
+                width: 138,
+                minHeight: 192,
+                borderRadius: 22,
+                border: isSelected && revealed
+                  ? `2px solid ${card.color}`
+                  : "1.5px solid rgba(255,255,255,0.11)",
+                background: isSelected && revealed
+                  ? `linear-gradient(160deg, ${card.color}55, rgba(22,12,50,0.95))`
+                  : "rgba(255,255,255,0.05)",
+                backdropFilter: "blur(14px)",
+                boxShadow: isSelected && revealed
+                  ? `0 0 30px ${card.color}55, 0 16px 40px rgba(0,0,0,.5)`
+                  : "0 8px 28px rgba(0,0,0,.35)",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                padding: "20px 12px",
+                animation: selected ? "none" : `${card.floatAnim} ${4.5 + CARDS.indexOf(card) * .6}s ease-in-out ${card.delay} infinite`,
+                opacity: isDimmed ? 0.22 : 1,
+                cursor: selected ? "default" : "pointer",
+                transition: "opacity .5s, background .4s, border .4s, box-shadow .4s",
               }}
             >
-              <div style={{ 
-                position: "relative",
-                zIndex: 2,
-                fontSize: "36px",
-                marginBottom: "12px",
-                filter: isDrawn ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
-              }}>{isDrawn ? card.emoji : "🃏"}</div>
-              <div style={{ 
-                position: "relative",
-                zIndex: 2,
-                fontFamily: "'Fredoka', sans-serif",
-                fontSize: "16px",
-                fontWeight: 700,
-                marginBottom: "8px",
-                textAlign: "center",
-              }}>{isDrawn ? card.title : "?"}</div>
-              <div style={{ 
-                position: "relative",
-                zIndex: 2,
-                fontSize: "13px",
-                color: "#666",
-                textAlign: "center",
-                lineHeight: "1.4",
-              }}>{isDrawn ? card.desc : "Sentuh untuk memilih"}</div>
-              {!isDrawn && (
+              {/* Card face */}
+              <div style={{
+                fontSize: 42, marginBottom: 12,
+                filter: isSelected && revealed ? "none" : "grayscale(1) brightness(.35)",
+                transition: "filter .5s",
+              }}>
+                {isSelected && revealed ? card.frontEmoji : "🌙"}
+              </div>
+
+              <div style={{
+                fontFamily: "'Fredoka', sans-serif", fontSize: 15, fontWeight: 700,
+                color: isSelected && revealed ? "#fff" : "#5a4a7a",
+                marginBottom: 4, transition: "color .4s",
+              }}>
+                {isSelected && revealed ? card.title : "Misteri"}
+              </div>
+
+              <div style={{
+                fontSize: 10, fontWeight: 800, letterSpacing: 1.2,
+                color: isSelected && revealed ? card.color : "#3a2a5a",
+                marginBottom: 10, textTransform: "uppercase",
+              }}>
+                {isSelected && revealed ? card.subtitle : "· · ·"}
+              </div>
+
+              {isSelected && revealed ? (
                 <div style={{
-                  position: "absolute",
-                  top: "0",
-                  left: "0",
-                  right: "0",
-                  bottom: "0",
-                  background: card.archetype === 'trail' ? 'rgba(255,122,89,0.1)' : card.archetype === 'tech' ? 'rgba(91,140,255,0.1)' : card.archetype === 'create' ? 'rgba(255,90,168,0.1)' : 'rgba(176,107,255,0.1)',
-                  opacity: 0,
-                  transition: "opacity 0.3s",
-                }} />
+                  fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.85)",
+                  lineHeight: 1.45, textAlign: "center",
+                  animation: "cardReveal .4s ease both",
+                }}>
+                  {card.desc}
+                </div>
+              ) : (
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "rgba(196,168,255,0.08)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, color: "rgba(196,168,255,.25)",
+                }}>
+                  ✦
+                </div>
               )}
             </button>
           );
         })}
       </div>
 
-      <div style={{ marginTop: "24px", textAlign: "center", fontSize: "16px", color: "#666", fontWeight: 600 }}>
-        {drawn.length}/3 terpilih
-      </div>
-
-      {drawn.length === 3 && (
-        <div style={{ marginTop: "16px", textAlign: "center" }}>
-          <div style={{ 
-            display: "inline-block",
-            background: "linear-gradient(135deg, #ffe24d, #ffd54f)",
-            color: "#a0379a",
-            fontFamily: "'Fredoka', sans-serif",
-            fontSize: "14px",
-            fontWeight: 700,
-            padding: "8px 16px",
-            borderRadius: "20px",
-            boxShadow: "0 4px 12px rgba(255,226,77,0.3)",
-          }}>
-            Mimpi Terbuka! Sentuh untuk lanjut
-          </div>
-        </div>
+      {!selected && (
+        <p style={{ marginTop: 20, fontSize: 13, color: "#c4a8ff", fontWeight: 600, opacity: .7 }}>
+          ✨ Sentuh kartu yang memanggilmu...
+        </p>
+      )}
+      {selected && revealed && (
+        <p style={{
+          marginTop: 18, fontSize: 13.5, color: "#ffe24d", fontWeight: 700,
+          opacity: .95, animation: "cardReveal .5s ease both",
+        }}>
+          ✦ {selected.title} telah memilihmu ✦
+        </p>
       )}
     </div>
   );

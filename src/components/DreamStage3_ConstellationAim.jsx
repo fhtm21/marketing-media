@@ -1,230 +1,217 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState } from "react";
 
-export default function DreamStage3_ConstellationAim({ onInteraction, stage }) {
-  const [selectedStars, setSelectedStars] = useState([]);
-  const [completed, setCompleted] = useState(false);
+// Stage 3 — Connect the Stars
+// Q: "Masalah yang paling pengen kamu pecahin?"
+// Mechanic: Klik 5 bintang bebas → tally per kelompok → konstelasi terbentuk
 
-  const patterns = useMemo(() => [
-    { id: "trailblazer", emoji: "🌟", name: "Jejak Perintis", archetype: "trail", pattern: [[10, 20], [30, 15], [50, 25], [70, 10], [90, 20]] },
-    { id: "builder", emoji: "⚡", name: "Kekuatan Teknik", archetype: "tech", pattern: [[20, 30], [40, 30], [40, 50], [60, 50], [80, 30]] },
-    { id: "creator", emoji: "🎨", name: "Pelangi Kreativitas", archetype: "create", pattern: [[15, 40], [35, 20], [55, 40], [75, 20], [85, 40]] },
-    { id: "harmony", emoji: "💎", name: "Keseimbangan", archetype: "design", pattern: [[20, 60], [40, 40], [60, 60], [80, 40]] },
-    { id: "growth", emoji: "🌱", name: "Pertumbuhan", archetype: "change", pattern: [[30, 70], [50, 50], [50, 70], [70, 40]] },
-    { id: "strategist", emoji: "🧭", name: "Strategi", archetype: "strat", pattern: [[15, 80], [45, 60], [75, 80], [45, 80]] },
-  ], []);
+// 24 stars in a 340×260 SVG. Each belongs to a group (or neutral).
+// Groups are loosely clustered so the pattern can be "felt" intuitively.
+const STARS = [
+  // create — top-left cluster
+  { id:0,  x:55,  y:30,  group:"create", r:3.2 },
+  { id:1,  x:90,  y:16,  group:"create", r:2.5 },
+  { id:2,  x:42,  y:68,  group:"create", r:2.8 },
+  { id:3,  x:115, y:48,  group:"create", r:3.0 },
+  { id:4,  x:72,  y:92,  group:"create", r:2.4 },
+  // tech — top-right cluster
+  { id:5,  x:232, y:22,  group:"tech",   r:3.0 },
+  { id:6,  x:272, y:42,  group:"tech",   r:2.6 },
+  { id:7,  x:258, y:80,  group:"tech",   r:2.8 },
+  { id:8,  x:310, y:28,  group:"tech",   r:3.2 },
+  { id:9,  x:220, y:64,  group:"tech",   r:2.4 },
+  // design — bottom-left cluster
+  { id:10, x:48,  y:170, group:"design", r:2.8 },
+  { id:11, x:88,  y:194, group:"design", r:3.0 },
+  { id:12, x:60,  y:232, group:"design", r:2.5 },
+  { id:13, x:120, y:212, group:"design", r:3.2 },
+  { id:14, x:36,  y:250, group:"design", r:2.4 },
+  // change — bottom-right cluster
+  { id:15, x:248, y:184, group:"change", r:2.8 },
+  { id:16, x:288, y:208, group:"change", r:3.0 },
+  { id:17, x:270, y:248, group:"change", r:2.6 },
+  { id:18, x:318, y:172, group:"change", r:3.2 },
+  { id:19, x:228, y:232, group:"change", r:2.4 },
+  // neutral / noise — scattered in center
+  { id:20, x:168, y:42,  group:null,     r:1.8 },
+  { id:21, x:152, y:130, group:null,     r:1.6 },
+  { id:22, x:176, y:205, group:null,     r:1.8 },
+  { id:23, x:162, y:82,  group:null,     r:1.5 },
+  { id:24, x:158, y:172, group:null,     r:1.6 },
+];
 
-  const stars = useMemo(() => {
-    return patterns.flatMap((p, pi) => 
-      p.pattern.map((pos, si) => ({
-        id: `${pi}-${si}`,
-        x: pos[0],
-        y: pos[1],
-        patternId: p.id,
-        emoji: p.emoji,
-      }))
-    );
-  }, [patterns]);
+const GROUP_META = {
+  create: { name:"Rasi Mercusuar", latin:"Pharos Digitalis",  color:"#ff5fa8", emoji:"🎨",
+    question:"Gimana brand ini dikenal banyak orang?",
+    lines:[[0,1],[1,3],[3,4],[4,2],[2,0]] },
+  tech:   { name:"Rasi Mahkota",   latin:"Corona Hereditas",  color:"#5b8cff", emoji:"👑",
+    question:"Gimana bisnis yang ada makin berkembang?",
+    lines:[[5,6],[6,7],[7,9],[9,8],[8,5]] },
+  design: { name:"Rasi Kristal",   latin:"Crystallum Artis",  color:"#b06bff", emoji:"✨",
+    question:"Gimana bikin produk yang user jatuh cinta?",
+    lines:[[10,11],[11,13],[13,12],[12,14],[14,10]] },
+  change: { name:"Rasi Harmonia",  latin:"Harmonia Viridis",  color:"#2ecc8f", emoji:"🌱",
+    question:"Gimana teknologi bisa bantu banyak orang?",
+    lines:[[15,18],[18,16],[16,17],[17,19],[19,15]] },
+};
 
-  const handleSelect = useCallback((star) => {
-    if (completed) return;
-    setSelectedStars(prev => {
-      const newSelected = [...prev, star];
-      if (newSelected.length >= 5) {
-        setCompleted(true);
-        setTimeout(() => onInteraction({
-          type: "constellationAim",
-          stage,
-          value: { pattern: star.patternId, archetype: star.patternId, accuracy: 1 }
-        }), 300);
-      }
-      return newSelected;
-    });
-  }, [completed, onInteraction, stage]);
+const MAX_CLICKS = 5;
 
-  const activePattern = selectedStars[0]?.patternId;
+function tallyGroup(selected) {
+  const count = { create:0, tech:0, design:0, change:0 };
+  selected.forEach(s => { if (s.group && count[s.group] !== undefined) count[s.group]++; });
+  return Object.entries(count).sort(([,a],[,b]) => b-a)[0][0];
+}
+
+export default function DreamStage3_ConstellationAim({ onComplete }) {
+  const [selected, setSelected] = useState([]); // array of star objects
+  const [phase, setPhase]       = useState("picking"); // picking | revealing | done
+  const [winner, setWinner]     = useState(null);
+  const [hovered, setHovered]   = useState(null);
+
+  const clickStar = (star) => {
+    if (phase !== "picking") return;
+    if (selected.find(s => s.id === star.id)) return; // already selected
+    const next = [...selected, star];
+    setSelected(next);
+    if (next.length === MAX_CLICKS) {
+      const w = tallyGroup(next);
+      setPhase("revealing");
+      setTimeout(() => {
+        setWinner(w);
+        setPhase("done");
+        setTimeout(() => onComplete(w), 1500);
+      }, 700);
+    }
+  };
+
+  const meta  = winner ? GROUP_META[winner] : null;
+  const SVG_W = 340;
+  const SVG_H = 268;
+
+  // Highlight adjacent stars (same group) on hover
+  const nearbyHighlight = hovered
+    ? STARS.filter(s => s.group === hovered.group && s.id !== hovered.id && s.group !== null).map(s => s.id)
+    : [];
 
   return (
-    <div style={{ padding: "24px", maxWidth: "500px", margin: "0 auto", minHeight: "60vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ marginBottom: "24px", textAlign: "center" }}>
-        <div style={{ fontSize: "48px", marginBottom: "12px" }}>⭐</div>
-        <h2 style={{
-          fontFamily: "'Fredoka', sans-serif",
-          fontSize: "22px",
-          fontWeight: 800,
-          color: "#a0379a",
-          margin: "0 0 8px",
-          textAlign: "center",
-        }}>Bentuk Konstelasi Mimpi</h2>
-        <p style={{ fontSize: "15px", color: "rgba(160, 55, 154, 0.7)", margin: 0, maxWidth: "300px", textAlign: "center" }}>
-          Hubungkan bintang-bintang untuk menemukan pola hidupmu
-        </p>
+    <div style={{ width:"100%", textAlign:"center" }}>
+      <style>{`
+        @keyframes starPop    { 0%{r:1;opacity:0} 60%{r:5} 100%{r:inherit;opacity:1} }
+        @keyframes constReveal{ from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+        @keyframes twinkleS   { 0%,100%{opacity:.45;r:inherit} 50%{opacity:1;r:calc(inherit + 1px)} }
+        .star-dot { cursor:pointer; transition: r .15s; }
+        .star-dot:hover { filter: brightness(2); }
+      `}</style>
+
+      <p style={{ fontSize:11, letterSpacing:3, textTransform:"uppercase", color:"#c4a8ff", fontWeight:700, margin:"0 0 10px", opacity:.85 }}>
+        ✦ Langkah 3 dari 7 — Rasi Bintang ✦
+      </p>
+      <h2 style={{ fontFamily:"'Fredoka',sans-serif", fontSize:22, fontWeight:700, color:"#fff", margin:"0 0 6px", textShadow:"0 2px 18px rgba(196,168,255,.5)" }}>
+        Konstelasi Apa yang Kamu Lihat?
+      </h2>
+      <p style={{ fontSize:13, color:"#c4a8ff", fontWeight:600, margin:"0 0 16px", opacity:.88 }}>
+        {phase==="picking"
+          ? `Klik ${MAX_CLICKS} bintang yang terasa saling terhubung (${selected.length}/${MAX_CLICKS})`
+          : phase==="revealing" ? "✨ Membaca konstelasi..." : "✦ Rasi bintangmu terbentuk!"}
+      </p>
+
+      {/* Star map SVG */}
+      <div style={{
+        display:"inline-block", borderRadius:22, overflow:"hidden",
+        border:"1px solid rgba(196,168,255,.12)",
+        background:"radial-gradient(ellipse at center, rgba(30,15,70,.6) 0%, rgba(8,6,22,.9) 100%)",
+        boxShadow:"0 12px 40px rgba(0,0,0,.5)",
+        position:"relative", marginBottom:16,
+      }}>
+        <svg
+          width={SVG_W} height={SVG_H}
+          style={{ display:"block", touchAction:"none" }}
+        >
+          {/* Faint constellation lines (winner reveal) */}
+          {phase === "done" && meta && meta.lines.map(([a,b], i) => {
+            const sa = STARS[a], sb = STARS[b];
+            return (
+              <line key={i} x1={sa.x} y1={sa.y} x2={sb.x} y2={sb.y}
+                stroke={meta.color} strokeWidth={1.4} strokeLinecap="round" opacity={.75} />
+            );
+          })}
+
+          {/* User-drawn lines */}
+          {phase !== "done" && selected.map((s, i) => {
+            if (i === 0) return null;
+            const prev = selected[i-1];
+            return (
+              <line key={i} x1={prev.x} y1={prev.y} x2={s.x} y2={s.y}
+                stroke="rgba(196,168,255,.5)" strokeWidth={1.2} strokeLinecap="round" strokeDasharray="4 3" />
+            );
+          })}
+
+          {/* Stars */}
+          {STARS.map(star => {
+            const isSelected    = !!selected.find(s => s.id === star.id);
+            const isWinGroup    = phase === "done" && winner && star.group === winner;
+            const isNearby      = nearbyHighlight.includes(star.id);
+            const selColor      = star.group ? GROUP_META[star.group]?.color : "#fff";
+            const baseColor     = isSelected ? selColor
+              : isWinGroup     ? meta.color
+              : isNearby       ? selColor + "99"
+              : "rgba(255,255,255,.55)";
+            const radius        = isSelected ? star.r + 2.5 : isWinGroup ? star.r + 1.5 : star.r;
+            return (
+              <circle
+                key={star.id}
+                cx={star.x} cy={star.y}
+                r={radius}
+                fill={baseColor}
+                className="star-dot"
+                style={{
+                  filter: isSelected ? `drop-shadow(0 0 4px ${selColor})` : isWinGroup ? `drop-shadow(0 0 5px ${meta.color})` : "none",
+                  cursor: phase==="picking" && !isSelected ? "pointer" : "default",
+                  transition:"all .2s",
+                }}
+                onClick={() => clickStar(star)}
+                onMouseEnter={() => setHovered(star)}
+                onMouseLeave={() => setHovered(null)}
+              />
+            );
+          })}
+        </svg>
       </div>
 
-      <div style={{ position: "relative", height: "240px", marginBottom: "24px", background: "linear-gradient(180deg, #0c1445 0%, #1a237e 100%)", borderRadius: "20px", overflow: "hidden", position: "relative" }}>
-        {/* Background stars */}
-        <div style={{
-          position: "absolute",
-          top: "0",
-          left: "0",
-          right: "0",
-          bottom: "0",
-          pointerEvents: "none",
-        }}>
-          {[...Array(30)].map((_, i) => (
+      {/* Progress dots */}
+      {phase === "picking" && (
+        <div style={{ display:"flex", gap:6, justifyContent:"center", marginBottom:12 }}>
+          {Array.from({length: MAX_CLICKS}).map((_,i) => (
             <div key={i} style={{
-              position: "absolute",
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 3 + 1}px`,
-              height: `${Math.random() * 3 + 1}px`,
-              background: "#fff",
-              borderRadius: "50%",
-              opacity: `${Math.random() * 0.5 + 0.2}`,
-              animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 3}s`,
+              width:8, height:8, borderRadius:"50%",
+              background: i < selected.length ? "#c4a8ff" : "rgba(255,255,255,.2)",
+              boxShadow: i < selected.length ? "0 0 6px #c4a8ff" : "none",
+              transition:"all .2s",
             }} />
           ))}
         </div>
+      )}
 
-        {/* Constellation lines */}
-        {!completed && selectedStars.length > 0 && (
-          <svg style={{
-            position: "absolute",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            pointerEvents: "none",
-          }}>
-            {selectedStars.map((star, index) => {
-              const nextStar = selectedStars[index + 1];
-              if (!nextStar) return null;
-              
-              return (
-                <line
-                  key={index}
-                  x1={`${star.x}%`}
-                  y1={`${star.y}%`}
-                  x2={`${nextStar.x}%`}
-                  y2={`${nextStar.y}%`}
-                  stroke="rgba(255,215,0,0.6)"
-                  strokeWidth="2"
-                  strokeDasharray="4 2"
-                />
-              );
-            })}
-          </svg>
-        )}
-
-        {/* Stars */}
-        {stars.map((star) => {
-          const isSelected = selectedStars.some(s => s.id === star.id);
-          const isHovered = false; // We don't have hover state in this simplified version
-          
-          return (
-            <button
-              key={star.id}
-              onClick={() => handleSelect(star)}
-              disabled={completed}
-              style={{
-                position: "absolute",
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                width: "40px",
-                height: "40px",
-                background: isSelected 
-                  ? "radial-gradient(circle, #fff5e6, #ffe24d)"
-                  : "rgba(255,255,255,0.8)",
-                border: isSelected 
-                  ? "2px solid #FFD700"
-                  : "2px solid rgba(255,255,255,0.5)",
-                borderRadius: "50%",
-                cursor: completed ? "default" : "pointer",
-                transform: "translate(-50%, -50%) scale(1)",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: isSelected 
-                  ? "0 0 12px rgba(255,215,0,0.5)"
-                  : "0 2px 6px rgba(0,0,0,0.1)",
-                zIndex: 10,
-              }}
-            >
-              {isSelected && (
-                <div style={{ 
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  color: "#b8860b",
-                  textShadow: "0 0 4px rgba(255,215,0,0.5)",
-                }}>
-                  {star.emoji}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {completed && activePattern && (
-        <div style={{ 
-          background: "linear-gradient(135deg, #fff5e6, #ffe24d)",
-          borderRadius: "16px",
-          padding: "20px",
-          textAlign: "center",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-        }}>
-          <div style={{ fontSize: "36px", marginBottom: "8px" }}>
-            {patterns.find(p => p.id === activePattern)?.emoji}
+      {/* Result reveal */}
+      {phase === "done" && meta && (
+        <div style={{ animation:"constReveal .6s ease both", textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:6 }}>{meta.emoji}</div>
+          <div style={{ fontFamily:"'Fredoka',sans-serif", fontSize:20, fontWeight:700, color:meta.color, marginBottom:2 }}>
+            {meta.name}
           </div>
-          <h3 style={{
-            fontFamily: "'Fredoka', sans-serif",
-            fontSize: "18px",
-            fontWeight: 800,
-            margin: "0 0 6px",
-            color: "#333",
-          }}>
-            {patterns.find(p => p.id === activePattern)?.name}
-          </h3>
-          <p style={{ fontSize: "14px", color: "#666", maxWidth: "280px", margin: "0 auto", lineHeight: "1.5" }}>
-            {patterns.find(p => p.id === activePattern)?.name === "Jejak Perintis" ? 
-              "Jalur zigzag yang berani dan penuh petualangan" : 
-              patterns.find(p => p.id === activePattern)?.name === "Kekuatan Teknik" ?
-                "Struktur yang kuat dan terorganisir dengan baik" :
-                patterns.find(p => p.id === activePattern)?.name === "Pelangi Kreativitas" ?
-                  "Aliran kreativitas yang bebas dan penuh warna" :
-                patterns.find(p => p.id === activePattern)?.name === "Keseimbangan" ?
-                  "Keharmonisan yang seimbang dan damai" :
-                patterns.find(p => p.id === activePattern)?.name === "Pertumbuhan" ?
-                  "Pertumbuhan yang bertahap namun pasti seperti tumbuhnya pohon" :
-                "Pola strategi yang tajam dan teliti seperti peta yang terperinci"
-            }
-          </p>
-        </div>
-      )}
-      
-      {!completed && selectedStars.length > 0 && (
-        <div style={{ marginTop: "16px", textAlign: "center", fontSize: "14px", color: "#666" }}>
-          {selectedStars.length}/5 bintang terhubung
-        </div>
-      )}
-      
-      {completed && (
-        <div style={{ marginTop: "16px", textAlign: "center" }}>
-          <div style={{ 
-            display: "inline-block",
-            background: "linear-gradient(135deg, #ffe24d, #ffd54f)",
-            color: "#a0379a",
-            fontFamily: "'Fredoka', sans-serif",
-            fontSize: "14px",
-            fontWeight: 700,
-            padding: "8px 16px",
-            borderRadius: "20px",
-            boxShadow: "0 4px 12px rgba(255,226,77,0.3)",
-          }}>
-            Konstelasi Terbentuk! Sentuh untuk lanjut
+          <div style={{ fontSize:10, letterSpacing:1.5, color:meta.color, opacity:.7, textTransform:"uppercase", marginBottom:8 }}>
+            {meta.latin}
+          </div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,.75)", fontWeight:600, fontStyle:"italic" }}>
+            {meta.question}
           </div>
         </div>
+      )}
+
+      {phase === "picking" && (
+        <p style={{ fontSize:12, color:"rgba(196,168,255,.55)", fontWeight:600 }}>
+          🌌 Bintang yang saling dekat mungkin terhubung...
+        </p>
       )}
     </div>
   );

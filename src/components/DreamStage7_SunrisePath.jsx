@@ -1,154 +1,219 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function DreamStage7_SunrisePath({ onInteraction, stage }) {
+// Stage 7 — Sunrise Path
+// Q: "Mimpi kamu 10 tahun lagi?"
+// Scoring: tech | design | change | strat
+
+const ELEMENTS = [
+  {
+    key: "tech",
+    emoji: "🏛️",
+    title: "Warisan Digital",
+    desc: "Bisnis keluarga naik kelas jadi brand digital",
+    color: "#5b8cff",
+    appearAt: 0,
+  },
+  {
+    key: "design",
+    emoji: "💎",
+    title: "Karya yang Dicintai",
+    desc: "Brand / produk yang dicintai karena desainnya",
+    color: "#b06bff",
+    appearAt: 800,
+  },
+  {
+    key: "change",
+    emoji: "🌱",
+    title: "Dampak Nyata",
+    desc: "Bisnis yang punya dampak sosial buat banyak orang",
+    color: "#2ecc8f",
+    appearAt: 1600,
+  },
+  {
+    key: "strat",
+    emoji: "📈",
+    title: "Kerajaan Bisnis",
+    desc: "Bangun & gedein banyak usaha sekaligus",
+    color: "#ffb020",
+    appearAt: 2400,
+  },
+];
+
+export default function DreamStage7_SunrisePath({ onComplete }) {
+  const [visible, setVisible] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [sunProgress, setSunProgress] = useState(0);
 
-  const focuses = [
-    { id: "horizon", emoji: "🌅", name: "Garis Horison", archetype: "trail", desc: "Memandang jauh ke depan dengan visi dan ambisi" },
-    { id: "flowers", emoji: "🌸", name: "Bunga-bunga", archetype: "design", desc: "Menghargai keindahan dan detail di sekitar" },
-    { id: "birds", emoji: "🐦", name: "Burung-burung", archetype: "create", desc: "Merasa bebas dan kreatif dalam mengekspresikan diri" },
-    { id: "water", emoji: "💧", name: "Air terjun", archetype: "strat", desc: "Menganalisis aliran dan membuat rencana yang terukur" },
-    { id: "rocks", emoji: "🪨", name: "Batuan", archetype: "tech", desc: "Membangun fondasi yang kuat dan teknologi yang andal" },
-    { id: "light", emoji: "☀️", name: "Cahaya pertama", archetype: "change", desc: "Menghadirkan perubahan positif dan inspirasi baru" },
-  ];
+  useEffect(() => {
+    // Reveal elements one by one
+    ELEMENTS.forEach((el) => {
+      setTimeout(() => {
+        setVisible((v) => [...v, el.key]);
+      }, el.appearAt + 200);
+    });
 
-  const chooseFocus = useCallback((f) => {
-    if (selected) return;
-    setSelected(f);
-    setTimeout(() => {
-      onInteraction({
-        type: "sunrisePath",
-        stage,
-        value: { focus: f.id, archetype: f.archetype, pace: 0.7 }
+    // Animate sun rising
+    const interval = setInterval(() => {
+      setSunProgress((p) => {
+        if (p >= 100) { clearInterval(interval); return 100; }
+        return p + 2;
       });
-      setSelected(null);
-    }, 300);
-  }, [onInteraction, stage, selected]);
+    }, 70);
+    return () => clearInterval(interval);
+  }, []);
+
+  const pick = (el) => {
+    if (selected || !visible.includes(el.key)) return;
+    setSelected(el);
+    setTimeout(() => onComplete(el.key), 1200);
+  };
+
+  // Sunrise sky color: dark blue → orange glow
+  const skyBg = `linear-gradient(180deg,
+    rgba(${Math.round(10 + sunProgress * .5)},${Math.round(8 + sunProgress * .3)},${Math.round(38 + sunProgress * .1)},1) 0%,
+    rgba(${Math.round(30 + sunProgress * 1.2)},${Math.round(15 + sunProgress * .6)},${Math.round(60 + sunProgress * .2)},1) 40%,
+    rgba(${Math.round(80 + sunProgress * 1.5)},${Math.round(40 + sunProgress)},${Math.round(10)},1) 100%
+  )`;
 
   return (
-    <div style={{ padding: "24px", maxWidth: "500px", margin: "0 auto", minHeight: "60vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ marginBottom: "24px", textAlign: "center" }}>
-        <div style={{ fontSize: "48px", marginBottom: "12px" }}>🌅</div>
-        <h2 style={{
-          fontFamily: "'Fredoka', sans-serif",
-          fontSize: "22px",
-          fontWeight: 800,
-          color: "#a0379a",
-          margin: "0 0 8px",
-          textAlign: "center",
-        }}>Menembus Fajar Baru</h2>
-        <p style={{ fontSize: "15px", color: "rgba(160, 55, 154, 0.7)", margin: 0, maxWidth: "300px", textAlign: "center" }}>
-          Pilih apa yang Anda saksikan saat fajar pertama terbit
-        </p>
-      </div>
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <style>{`
+        @keyframes sunRise { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes elementAppear { from{opacity:0;transform:translateY(14px) scale(.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes sunGlow {
+          0%,100% { box-shadow: 0 0 20px rgba(255,176,32,.4), 0 0 40px rgba(255,120,30,.2); }
+          50%      { box-shadow: 0 0 40px rgba(255,176,32,.7), 0 0 80px rgba(255,120,30,.35); }
+        }
+        .sunrise-btn { border:none; cursor:pointer; padding:0; background:transparent; }
+        .sunrise-btn:hover:not(:disabled) { filter:brightness(1.15); }
+        .sunrise-btn:disabled { cursor:default; }
+      `}</style>
 
-      <div style={{ position: "relative", height: "240px", marginBottom: "24px" }}>
-        {/* Sky gradient */}
-        <div style={{
-          position: "absolute",
-          top: "0",
-          left: "0",
-          right: "0",
-          bottom: "0",
-          background: "linear-gradient(180deg, #ffb347 0%, #ffd854 40%, #ffed66 70%, #fff5e6 100%)",
-          borderRadius: "20px",
-          overflow: "hidden",
-        }} />
+      <p style={{
+        fontSize: 11, letterSpacing: 3, textTransform: "uppercase",
+        color: "#ffb4a2", fontWeight: 700, margin: "0 0 10px", opacity: .85,
+      }}>
+        ✦ Langkah 7 dari 7 — Fajar Impian ✦
+      </p>
+      <h2 style={{
+        fontFamily: "'Fredoka', sans-serif", fontSize: 22, fontWeight: 700,
+        color: "#fff", margin: "0 0 6px", textShadow: "0 2px 18px rgba(255,180,162,.4)",
+      }}>
+        Apa yang Menarik Perhatianmu Saat Fajar Tiba?
+      </h2>
+      <p style={{ fontSize: 13.5, color: "#ffb4a2", fontWeight: 600, margin: "0 0 18px", opacity: .9 }}>
+        Mimpi kamu 10 tahun lagi?
+      </p>
 
+      {/* Sunrise panorama */}
+      <div style={{
+        position: "relative", borderRadius: 22, overflow: "hidden",
+        background: skyBg, border: "1px solid rgba(255,176,32,.15)",
+        marginBottom: 18, padding: "20px 16px 16px",
+        minHeight: 160, transition: "background 1s",
+      }}>
         {/* Sun */}
         <div style={{
-          position: "absolute",
-          top: "10%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontSize: "36px",
-          filter: "drop-shadow(0 0 20px #FFD700)",
-          zIndex: 2,
-        }}>
-          ☀️
-        </div>
-
-        {/* Ground */}
-        <div style={{
-          position: "absolute",
-          bottom: "0",
-          left: "0",
-          right: "0",
-          height: "60px",
-          background: "linear-gradient(180deg, #8B4513 0%, #654321 100%)",
-          borderRadius: "20px 20px 0 0",
-          boxShadow: "0 -4px 12px rgba(139,69,19,0.3)",
+          width: 52, height: 52, borderRadius: "50%",
+          background: "radial-gradient(circle, #fffde7, #ffb020)",
+          margin: "0 auto 16px",
+          transform: `translateY(${Math.max(0, 20 - sunProgress * .2)}px)`,
+          opacity: Math.min(1, sunProgress * .015),
+          animation: "sunGlow 3s ease-in-out infinite",
+          transition: "transform .5s, opacity .5s",
         }} />
 
-        {/* Focus points - arranged in a semi-circle above the ground */}
-        {focuses.map((focus, i) => {
-          const angles = [30, 50, 70, 110, 130, 150]; // Spread across the top half
-          const angle = angles[i] * (Math.PI / 180);
-          const radius = 35;
-          const x = 50 + Math.cos(angle) * radius;
-          const y = 30 + Math.sin(angle) * radius;
-          
+        {/* Horizon line */}
+        <div style={{
+          height: 1,
+          background: `linear-gradient(90deg, transparent, rgba(255,176,32,${Math.min(.6, sunProgress * .006)}), transparent)`,
+          marginBottom: 14,
+        }} />
+
+        {/* Tip text */}
+        {visible.length < ELEMENTS.length && (
+          <p style={{ fontSize: 12, color: "rgba(255,210,162,.7)", fontWeight: 600, margin: 0 }}>
+            Elemen bermunculan saat fajar terbit...
+          </p>
+        )}
+      </div>
+
+      {/* Elements grid */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+        {ELEMENTS.map((el) => {
+          const isVisible = visible.includes(el.key);
+          const isSelected = selected?.key === el.key;
+          const isDimmed = selected && !isSelected;
+          const isLocked = !isVisible;
           return (
             <button
-              key={focus.id}
-              onClick={() => chooseFocus(focus)}
-              disabled={selected}
+              key={el.key}
+              className="sunrise-btn"
+              onClick={() => pick(el)}
+              disabled={!!selected || isLocked}
               style={{
-                position: "absolute",
-                left: `${x}%`,
-                top: `${y}%`,
-                width: "50px",
-                height: "60px",
-                background: selected?.id === focus.id 
-                  ? `linear-gradient(135deg, #fff5e6, #ffe24d)` 
-                  : "rgba(255,255,255,0.9)",
-                border: `2px solid ${selected?.id === focus.id ? "#ffb020" : "#e0e0e0"}`,
-                borderRadius: "12px",
-                padding: "8px",
-                cursor: selected ? "default" : "pointer",
-                textAlign: "center",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: selected?.id === focus.id 
-                  ? `0 0 12px ${selected?.id === focus.id ? "#ffb020" : "#e0e0e0"}33`
-                  : "0 2px 6px rgba(0,0,0,0.1)",
-                zIndex: 3,
+                width: "calc(50% - 8px)",
+                borderRadius: 18,
+                border: isSelected
+                  ? `2px solid ${el.color}`
+                  : isVisible
+                    ? "1.5px solid rgba(255,255,255,0.12)"
+                    : "1.5px solid rgba(255,255,255,0.04)",
+                background: isSelected
+                  ? `linear-gradient(135deg, ${el.color}44, rgba(14,8,40,.95))`
+                  : isVisible
+                    ? "rgba(255,255,255,0.07)"
+                    : "rgba(255,255,255,0.02)",
+                backdropFilter: "blur(12px)",
+                boxShadow: isSelected
+                  ? `0 0 28px ${el.color}55, 0 12px 28px rgba(0,0,0,.5)`
+                  : "0 6px 18px rgba(0,0,0,.35)",
+                padding: "14px 12px",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", gap: 8,
+                opacity: isDimmed ? 0.18 : isLocked ? 0.2 : 1,
+                transition: "all .4s",
+                cursor: selected || isLocked ? "default" : "pointer",
+                animation: isVisible && !selected ? "elementAppear .6s ease both" : "none",
               }}
             >
-              <div style={{ 
-                fontSize: "18px",
-                marginBottom: "4px",
-              }}>{focus.emoji}</div>
-              <div style={{ 
-                fontFamily: "'Fredoka', sans-serif",
-                fontSize: "11px",
-                fontWeight: 600,
-                textAlign: "center",
-              }}>{focus.name}</div>
+              <div style={{
+                fontSize: 28, lineHeight: 1,
+                filter: isLocked ? "grayscale(1) brightness(.3)" : "none",
+                transition: "filter .5s",
+              }}>
+                {isLocked ? "✦" : el.emoji}
+              </div>
+              <div style={{
+                fontFamily: "'Fredoka', sans-serif", fontSize: 14, fontWeight: 700,
+                color: isSelected ? el.color : isVisible ? "#ffb4a2" : "rgba(255,255,255,.2)",
+              }}>
+                {isLocked ? "Menunggu fajar..." : el.title}
+              </div>
+              <div style={{
+                fontSize: 11.5, fontWeight: 600,
+                color: isSelected ? "rgba(255,255,255,.85)" : isVisible ? "rgba(255,255,255,.45)" : "rgba(255,255,255,.1)",
+                lineHeight: 1.4, textAlign: "center",
+              }}>
+                {isLocked ? "···" : el.desc}
+              </div>
             </button>
           );
         })}
       </div>
-      
+
+      {!selected && visible.length === ELEMENTS.length && (
+        <p style={{ marginTop: 14, fontSize: 13, color: "#ffb4a2", fontWeight: 600, opacity: .7 }}>
+          🌅 Klik yang paling menarik perhatianmu...
+        </p>
+      )}
       {selected && (
-        <div style={{ marginTop: "16px", textAlign: "center" }}>
-          <div style={{ 
-            display: "inline-block",
-            background: "linear-gradient(135deg, #ffe24d, #ffd54f)",
-            color: "#a0379a",
-            fontFamily: "'Fredoka', sans-serif",
-            fontSize: "14px",
-            fontWeight: 700,
-            padding: "8px 16px",
-            borderRadius: "20px",
-            boxShadow: "0 4px 12px rgba(255,226,77,0.3)",
-          }}>
-            Fajar Terjadi: {selected.emoji} {selected.name}! Sentuh untuk lanjut ke hasil
-          </div>
-        </div>
+        <p style={{
+          marginTop: 14, fontSize: 13.5, color: "#ffe24d", fontWeight: 700,
+          opacity: .95, animation: "elementAppear .5s ease both",
+        }}>
+          ✦ Fajar telah menyingkap takdirmu ✦
+        </p>
       )}
     </div>
   );
