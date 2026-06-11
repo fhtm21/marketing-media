@@ -5,7 +5,6 @@ module.exports = {
     // Menambahkan alias untuk import file
     config.resolve.alias = {
       ...config.resolve.alias,
-      'orbit-quiz': path.resolve(__dirname, 'src/OrbitQuiz.jsx'),
       'orbit-rocket': path.resolve(__dirname, 'src/OrbitRocketAdventure.jsx'),
     };
     

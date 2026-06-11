@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "ORBIT Quiz - Business Information Technology Personality Quiz",
   "main": "index.js",
+  "workspaces": [
+    "orbit-rocket-app"
+  ],
   "scripts": {
     "start": "react-scripts start",
     "start:rocket": "set REACT_APP_VARIANT=rocket&& react-scripts start",
