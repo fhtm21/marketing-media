@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // Stage 2 — Click & Hold Power Meter
-// Q: "Kalau punya startup, kamu paling pengen pegang bagian…"
+// Q: "Kalau punya startup, kamu paling ingin memegang bagian apa?"
 // Mechanic: Tekan & tahan → power bar naik → release → karakter lompat ke pulau
 
 const ISLANDS = [
-  { key: "create", emoji: "⭐", name: "Bintang Impian", label: "Marketing & Branding", color: "#ff5fa8", pMin: 0,  pMax: 28 },
-  { key: "design", emoji: "🌈", name: "Pelangi Awan",   label: "Produk & UX",           color: "#b06bff", pMin: 28, pMax: 55 },
-  { key: "strat",  emoji: "⛰️", name: "Puncak Aspirasi", label: "Bisnis & Operasional",  color: "#ffb020", pMin: 55, pMax: 78 },
-  { key: "trail",  emoji: "🚪", name: "Pintu Langit",    label: "Visi & Arah Besar",     color: "#ff7a59", pMin: 78, pMax: 101 },
+  { key: "create", emoji: "⭐", name: "Bintang Impian", label: "Marketing & Branding", color: "#ff5fa8", pMin: 0,  pMax: 28, offsetX: -45 },
+  { key: "design", emoji: "🌈", name: "Pelangi Awan",   label: "Produk & UX",           color: "#b06bff", pMin: 28, pMax: 55, offsetX: 45 },
+  { key: "strat",  emoji: "⛰️", name: "Puncak Aspirasi", label: "Bisnis & Operasional",  color: "#ffb020", pMin: 55, pMax: 78, offsetX: -40 },
+  { key: "trail",  emoji: "🚪", name: "Pintu Langit",    label: "Visi & Arah Besar",     color: "#ff7a59", pMin: 78, pMax: 101, offsetX: 40 },
 ];
 
-// % from top of the play area for each island
-const ISLAND_TOP = [82, 57, 33, 10];
+// % from top of the play area for each island (extended top space)
+const ISLAND_TOP = [80, 56, 32, 11];
 
 function getIslandByPower(p) {
   return ISLANDS.find(i => p >= i.pMin && p < i.pMax) || ISLANDS[0];
@@ -37,16 +37,16 @@ export default function DreamStage2_CloudReach({ onComplete }) {
     phaseRef.current = "jumping";
     setPhase("jumping");
     const island = getIslandByPower(powerRef.current);
+    setLandedIsland(island);
     setTimeout(() => {
       phaseRef.current = "landed";
       setPhase("landed");
-      setLandedIsland(island);
       setTimeout(() => onComplete(island.key), 1300);
     }, 750);
   };
 
   const startHold = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (phaseRef.current !== "ready") return;
     holdingRef.current = true;
     phaseRef.current   = "holding";
@@ -78,16 +78,66 @@ export default function DreamStage2_CloudReach({ onComplete }) {
     doJump();
   };
 
-  useEffect(() => () => clearInterval(timerRef.current), []);
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (phaseRef.current === "ready" && !holdingRef.current) {
+          startHold(e);
+        }
+      }
+    };
+    const handleKeyUp = (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (holdingRef.current) {
+          stopHold(e);
+        }
+      }
+    };
 
-  // Character top% in play area: from 88% (bottom) up to 5% (top)
-  const charTopPct = 88 - power * 0.83;
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      clearInterval(timerRef.current);
+    };
+  }, []);
+
+  // Character top, left, transition, animation, and filter properties
+  let charLeft = "50%";
+  let charTop = "88%";
+  let charAnim = "none";
+  let charTrans = "none";
+  let charFilter = "none";
+
+  if (phase === "ready") {
+    charLeft = "50%";
+    charTop = "88%";
+    charAnim = "none";
+    charTrans = "top .3s ease, left .3s ease, transform .3s ease";
+  } else if (phase === "holding") {
+    charLeft = "50%";
+    charTop = "88%";
+    charAnim = "charShake 0.15s infinite alternate";
+    charTrans = "transform 0.1s ease";
+    charFilter = `drop-shadow(0 0 12px ${currentIsland.color})`;
+  } else if (phase === "jumping" || phase === "landed") {
+    const idx = landedIsland ? ISLANDS.findIndex(i => i.key === landedIsland.key) : 0;
+    charLeft = landedIsland ? `calc(50% + ${landedIsland.offsetX}px)` : "50%";
+    charTop = landedIsland ? `${ISLAND_TOP[idx]}%` : "88%";
+    charAnim = "charFlip .75s cubic-bezier(0.25, 1, 0.5, 1) both";
+    charTrans = "top .75s cubic-bezier(0.25, 1, 0.5, 1), left .75s cubic-bezier(0.25, 1, 0.5, 1)";
+  }
 
   return (
     <div style={{ width: "100%", textAlign: "center", userSelect: "none" }}>
       <style>{`
         @keyframes isleFloat  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
-        @keyframes charJump   { 0%{transform:translateX(-50%) scale(1)} 40%{transform:translateX(-50%) scale(1.25) translateY(-18px)} 100%{transform:translateX(-50%) scale(1)} }
+        @keyframes charShake  { 0%{transform:translateX(-50%) scale(1.15, 0.7) translate(1px, 0)} 100%{transform:translateX(-50%) scale(1.15, 0.7) translate(-1px, 0)} }
+        @keyframes charFlip   { 0%{transform:translateX(-50%) rotate(0deg) scale(1)} 50%{transform:translateX(-50%) rotate(-180deg) scale(1.4)} 100%{transform:translateX(-50%) rotate(-360deg) scale(1)} }
         @keyframes landBounce { 0%{transform:scale(.7);opacity:0} 65%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
         @keyframes holdPulse  { 0%,100%{box-shadow:0 0 18px rgba(255,255,255,.15)} 50%{box-shadow:0 0 36px rgba(255,255,255,.35)} }
         @keyframes powerFill  { from{height:0} }
@@ -100,12 +150,12 @@ export default function DreamStage2_CloudReach({ onComplete }) {
         Seberapa Tinggi Kamu Meraih?
       </h2>
       <p style={{ fontSize:13, color:"#a8d8ff", fontWeight:600, margin:"0 0 14px", opacity:.88 }}>
-        Kalau punya startup, kamu paling pengen pegang bagian…
+        Kalau punya startup, kamu paling ingin memegang bagian apa?
       </p>
 
       {/* ── Play area ── */}
       <div style={{
-        position:"relative", height:310, width:"100%", borderRadius:22, overflow:"hidden",
+        position:"relative", height:360, width:"100%", borderRadius:22, overflow:"hidden",
         background:"linear-gradient(180deg,rgba(8,14,50,.55) 0%,rgba(15,28,80,.35) 100%)",
         border:"1px solid rgba(135,206,235,.12)", marginBottom:14,
       }}>
@@ -137,13 +187,15 @@ export default function DreamStage2_CloudReach({ onComplete }) {
           </div>
         )}
 
-        {/* Islands */}
+        {/* Islands (Staggered Layout) */}
         {ISLANDS.map((island, idx) => {
           const isTarget = currentIsland.key === island.key && phase === "holding";
           const isLanded = landedIsland?.key === island.key;
           return (
             <div key={island.key} style={{
-              position:"absolute", left:"50%", top:`${ISLAND_TOP[idx]}%`,
+              position:"absolute", 
+              left:`calc(50% + ${island.offsetX}px)`, 
+              top:`${ISLAND_TOP[idx]}%`,
               transform:"translate(-50%, -50%)",
               animation:`isleFloat ${4.2+idx*.7}s ease-in-out infinite`,
               zIndex: isLanded ? 3 : 1,
@@ -172,12 +224,13 @@ export default function DreamStage2_CloudReach({ onComplete }) {
         {/* Character 🦄 */}
         {phase !== "landed" && (
           <div style={{
-            position:"absolute", left:"50%", top:`${charTopPct}%`,
-            transform:"translateX(-50%)",
+            position:"absolute", 
+            left: charLeft, 
+            top: charTop,
             fontSize:30, lineHeight:1, zIndex:2,
-            transition: phase==="holding" ? "top .1s linear" : "top .8s cubic-bezier(.34,1.56,.64,1)",
-            animation: phase==="jumping" ? "charJump .75s ease both" : "none",
-            filter: phase==="holding" ? `drop-shadow(0 0 10px ${currentIsland.color})` : "none",
+            transition: charTrans,
+            animation: charAnim,
+            filter: charFilter,
           }}>
             🦄
           </div>
@@ -205,7 +258,7 @@ export default function DreamStage2_CloudReach({ onComplete }) {
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
           <button
             onMouseDown={startHold} onMouseUp={stopHold} onMouseLeave={stopHold}
-            onTouchStart={startHold} onTouchEnd={stopHold}
+            onTouchStart={startHold} onTouchEnd={stopHold} onTouchCancel={stopHold}
             style={{
               fontFamily:"'Fredoka',sans-serif", fontWeight:700, fontSize:17,
               width:180, height:58, borderRadius:29,
@@ -225,7 +278,7 @@ export default function DreamStage2_CloudReach({ onComplete }) {
           </button>
           {phase==="ready" && (
             <p style={{ fontSize:12, color:"rgba(135,206,235,.6)", fontWeight:600 }}>
-              Tahan lama = lompat lebih tinggi ✨
+              Tahan tombol Spacebar atau klik & tahan untuk melompat ✨
             </p>
           )}
           {phase==="holding" && (

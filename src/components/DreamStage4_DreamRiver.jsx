@@ -4,9 +4,6 @@ import React, { useState, useRef } from "react";
 // Q: "Weekend ideal versi kamu?"
 // Mechanic: 2 fork decisions via swipe/drag left or right → combo → archetype
 //
-// Fork 1: Spontan vs Terencana
-// Fork 2 (depends on F1): sub-question specific to the leaning
-//
 // Combos → archetype:
 //   L + L (Spontan + Ekspresi & Kreasi)          → create
 //   L + R (Spontan + Jelajah & Peluang)           → trail
@@ -17,7 +14,7 @@ const FORKS = [
   {
     id: 0,
     river: "Sungai Pertama",
-    question: "Waktu luang ada, kamu...",
+    question: "Saat ada waktu luang, kamu lebih suka?",
     left:  { label: "Langsung action!",    icon: "⚡", desc: "Spontan & eksekutif", hint: "swipe kiri ←" },
     right: { label: "Mikir dulu matang",   icon: "🧭", desc: "Terencana & strategis", hint: "swipe kanan →" },
   },
@@ -25,16 +22,16 @@ const FORKS = [
     // Shown after Left on Fork 1 (Spontan)
     id: "1L",
     river: "Persimpangan Timur",
-    question: "Kamu lebih suka...",
+    question: "Di persimpangan ini, kamu lebih suka?",
     left:  { label: "Bikin konten & brand", icon: "🎬", desc: "Ekspresi & kreasi", hint: "swipe kiri ←" },
-    right: { label: "Nyari peluang baru",   icon: "🔭", desc: "Jelajah & explore", hint: "swipe kanan →" },
+    right: { label: "Mencari peluang baru", icon: "🔭", desc: "Jelajah & explore", hint: "swipe kanan →" },
     resultMap: { left: "create", right: "trail" },
   },
   {
     // Shown after Right on Fork 1 (Terencana)
     id: "1R",
     river: "Persimpangan Barat",
-    question: "Kamu lebih suka...",
+    question: "Di persimpangan ini, kamu lebih suka?",
     left:  { label: "Bantu & beri dampak",  icon: "🌿", desc: "Orang & komunitas",  hint: "swipe kiri ←" },
     right: { label: "Kembangkan bisnis",    icon: "🤝", desc: "Warisan & sistem",   hint: "swipe kanan →" },
     resultMap: { left: "change", right: "tech" },
@@ -121,7 +118,55 @@ export default function DreamStage4_DreamRiver({ onComplete }) {
         @keyframes swipeHint { 0%,100%{transform:translateX(0);opacity:.5} 50%{transform:translateX(8px);opacity:1} }
         @keyframes swipeHintL{ 0%,100%{transform:translateX(0);opacity:.5} 50%{transform:translateX(-8px);opacity:1} }
         @keyframes forkIn    { from{opacity:0;transform:translateY(16px) scale(.94)} to{opacity:1;transform:none} }
+        @keyframes cardEntry { from{opacity:0;transform:translateY(24px) scale(.88)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes resultPop { 0%{transform:scale(.7);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+
+        .river-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          justify-content: center;
+          margin-bottom: 20px;
+          flex-direction: row;
+        }
+        .river-option {
+          flex: 1;
+          transition: opacity .25s ease;
+        }
+        .river-option.left {
+          text-align: right;
+        }
+        .river-option.right {
+          text-align: left;
+        }
+        .river-card-wrapper {
+          flex-shrink: 0;
+          display: flex;
+          justify-content: center;
+        }
+
+        @media (max-width: 500px) {
+          .river-container {
+            flex-direction: column;
+            gap: 14px;
+          }
+          .river-option {
+            flex: none;
+            width: 100%;
+            text-align: center !important;
+            padding: 4px 8px;
+          }
+          .river-option.left {
+            order: 1;
+          }
+          .river-card-wrapper {
+            order: 2;
+          }
+          .river-option.right {
+            order: 3;
+          }
+        }
       `}</style>
 
       <p style={{ fontSize:11, letterSpacing:3, textTransform:"uppercase", color:"#a8e6cf", fontWeight:700, margin:"0 0 10px", opacity:.85 }}>
@@ -131,39 +176,43 @@ export default function DreamStage4_DreamRiver({ onComplete }) {
         Ikuti Aliran Sungai Mimpimu
       </h2>
 
-      {phase !== "done" && (
-        <>
-          {/* Fork label */}
-          <p style={{ fontSize:11, letterSpacing:2, color:"rgba(168,230,207,.6)", fontWeight:700, textTransform:"uppercase", margin:"0 0 4px" }}>
-            {currentFork.river}
-          </p>
-          <p style={{ fontSize:14, color:"#a8e6cf", fontWeight:600, margin:"0 0 18px", opacity:.9, animation:"forkIn .4s ease both" }}>
-            {currentFork.question}
-          </p>
+      {/* Swipe UI Container with transition */}
+      <div style={{
+        opacity: phase === "done" ? 0 : 1,
+        maxHeight: phase === "done" ? 0 : 600,
+        overflow: "hidden",
+        transition: "opacity 0.4s ease, max-height 0.4s ease",
+        pointerEvents: phase === "done" ? "none" : "auto",
+      }}>
+        {/* Fork label */}
+        <p style={{ fontSize:11, letterSpacing:2, color:"rgba(168,230,207,.6)", fontWeight:700, textTransform:"uppercase", margin:"0 0 4px" }}>
+          {currentFork.river}
+        </p>
+        <p style={{ fontSize:14, color:"#a8e6cf", fontWeight:600, margin:"0 0 18px", opacity:.9, animation:"forkIn .4s ease both" }}>
+          {currentFork.question}
+        </p>
 
-          {/* Swipe card + side labels */}
-          <div style={{ position:"relative", display:"flex", alignItems:"center", gap:10, justifyContent:"center", marginBottom:16 }}>
+        {/* Swipe card + side labels container */}
+        <div className="river-container">
 
-            {/* Left option label */}
-            <div style={{
-              flex:1, textAlign:"right", opacity: dir==="left" ? 1 : .4,
-              transition:"opacity .2s",
-            }}>
-              <div style={{ fontSize:24 }}>{currentFork.left.icon}</div>
-              <div style={{ fontFamily:"'Fredoka',sans-serif", fontSize:13, fontWeight:700, color:"#a8e6cf" }}>
-                {currentFork.left.label}
-              </div>
-              <div style={{ fontSize:10.5, color:"rgba(255,255,255,.5)", fontWeight:600, marginTop:2 }}>
-                {currentFork.left.desc}
-              </div>
+          {/* Left option label */}
+          <div className="river-option left" style={{ opacity: dir==="left" ? 1 : .4 }}>
+            <div style={{ fontSize:24 }}>{currentFork.left.icon}</div>
+            <div style={{ fontFamily:"'Fredoka',sans-serif", fontSize:13, fontWeight:700, color:"#a8e6cf" }}>
+              {currentFork.left.label}
             </div>
+            <div style={{ fontSize:10.5, color:"rgba(255,255,255,.5)", fontWeight:600, marginTop:2 }}>
+              {currentFork.left.desc}
+            </div>
+          </div>
 
-            {/* Draggable card */}
+          {/* Draggable card wrapper with entry key */}
+          <div key={forkIdx} className="river-card-wrapper" style={{ animation: "cardEntry 0.4s cubic-bezier(0.25, 1, 0.5, 1) both" }}>
             <div
               onMouseDown={onPD} onMouseMove={onPM} onMouseUp={onPU} onMouseLeave={onPU}
-              onTouchStart={onPD} onTouchMove={onPM} onTouchEnd={onPU}
+              onTouchStart={onPD} onTouchMove={onPM} onTouchEnd={onPU} onTouchCancel={onPU}
               style={{
-                width:140, height:170, borderRadius:22, flexShrink:0,
+                width:140, height:170, borderRadius:22,
                 background: dir==="left"
                   ? "linear-gradient(135deg, rgba(168,230,207,.25), rgba(14,8,40,.9))"
                   : dir==="right"
@@ -195,67 +244,73 @@ export default function DreamStage4_DreamRiver({ onComplete }) {
                 {dir==="left" ? "← Kiri" : dir==="right" ? "Kanan →" : "Geser!"}
               </div>
             </div>
+          </div>
 
-            {/* Right option label */}
-            <div style={{
-              flex:1, textAlign:"left", opacity: dir==="right" ? 1 : .4,
-              transition:"opacity .2s",
-            }}>
-              <div style={{ fontSize:24 }}>{currentFork.right.icon}</div>
-              <div style={{ fontFamily:"'Fredoka',sans-serif", fontSize:13, fontWeight:700, color:"#a8e6cf" }}>
-                {currentFork.right.label}
-              </div>
-              <div style={{ fontSize:10.5, color:"rgba(255,255,255,.5)", fontWeight:600, marginTop:2 }}>
-                {currentFork.right.desc}
-              </div>
+          {/* Right option label */}
+          <div className="river-option right" style={{ opacity: dir==="right" ? 1 : .4 }}>
+            <div style={{ fontSize:24 }}>{currentFork.right.icon}</div>
+            <div style={{ fontFamily:"'Fredoka',sans-serif", fontSize:13, fontWeight:700, color:"#a8e6cf" }}>
+              {currentFork.right.label}
+            </div>
+            <div style={{ fontSize:10.5, color:"rgba(255,255,255,.5)", fontWeight:600, marginTop:2 }}>
+              {currentFork.right.desc}
             </div>
           </div>
-
-          {/* Swipe hint arrows */}
-          <div style={{ display:"flex", gap:24, justifyContent:"center", alignItems:"center", marginBottom:14 }}>
-            <button onClick={()=>btnChoose("left")} style={{
-              fontFamily:"'Nunito',sans-serif", fontWeight:700, fontSize:13,
-              color:"#a8e6cf", background:"rgba(168,230,207,.1)", border:"1.5px solid rgba(168,230,207,.3)",
-              borderRadius:30, padding:"8px 18px", cursor:"pointer", transition:"all .2s",
-              animation:"swipeHintL 2s ease-in-out infinite",
-            }}>
-              ← {currentFork.left.label}
-            </button>
-            <button onClick={()=>btnChoose("right")} style={{
-              fontFamily:"'Nunito',sans-serif", fontWeight:700, fontSize:13,
-              color:"#87CEEB", background:"rgba(91,140,255,.1)", border:"1.5px solid rgba(91,140,255,.3)",
-              borderRadius:30, padding:"8px 18px", cursor:"pointer", transition:"all .2s",
-              animation:"swipeHint 2s ease-in-out .5s infinite",
-            }}>
-              {currentFork.right.label} →
-            </button>
-          </div>
-
-          {/* Progress fork dots */}
-          <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
-            {[0,1].map(i => (
-              <div key={i} style={{
-                width:24, height:6, borderRadius:4,
-                background: i < choices.length ? "#a8e6cf"
-                  : i === choices.length ? "rgba(168,230,207,.6)" : "rgba(255,255,255,.15)",
-              }} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Result */}
-      {phase === "done" && result && (
-        <div style={{ animation:"resultPop .6s cubic-bezier(.34,1.56,.64,1) both", marginTop:8 }}>
-          <div style={{ fontSize:48, marginBottom:10 }}>🌊</div>
-          <p style={{ fontFamily:"'Fredoka',sans-serif", fontSize:18, fontWeight:700, color:"#ffe24d", margin:"0 0 4px" }}>
-            Sungai membawamu...
-          </p>
-          <p style={{ fontSize:13, color:"rgba(255,255,255,.7)", fontWeight:600 }}>
-            Arah yang dipilih jiwamu
-          </p>
         </div>
-      )}
+
+        {/* Swipe hint arrows */}
+        <div style={{ display:"flex", gap:24, justifyContent:"center", alignItems:"center", marginBottom:14 }}>
+          <button onClick={()=>btnChoose("left")} style={{
+            fontFamily:"'Nunito',sans-serif", fontWeight:700, fontSize:13,
+            color:"#a8e6cf", background:"rgba(168,230,207,.1)", border:"1.5px solid rgba(168,230,207,.3)",
+            borderRadius:30, padding:"8px 18px", cursor:"pointer", transition:"all .2s",
+            animation:"swipeHintL 2s ease-in-out infinite",
+          }}>
+            ← {currentFork.left.label}
+          </button>
+          <button onClick={()=>btnChoose("right")} style={{
+            fontFamily:"'Nunito',sans-serif", fontWeight:700, fontSize:13,
+            color:"#87CEEB", background:"rgba(91,140,255,.1)", border:"1.5px solid rgba(91,140,255,.3)",
+            borderRadius:30, padding:"8px 18px", cursor:"pointer", transition:"all .2s",
+            animation:"swipeHint 2s ease-in-out .5s infinite",
+          }}>
+            {currentFork.right.label} →
+          </button>
+        </div>
+
+        {/* Progress fork dots */}
+        <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
+          {[0,1].map(i => (
+            <div key={i} style={{
+              width:24, height:6, borderRadius:4,
+              background: i < choices.length ? "#a8e6cf"
+                : i === choices.length ? "rgba(168,230,207,.6)" : "rgba(255,255,255,.15)",
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Result Container with transition */}
+      <div style={{
+        opacity: phase === "done" ? 1 : 0,
+        maxHeight: phase === "done" ? 400 : 0,
+        overflow: "hidden",
+        transition: "opacity 0.5s ease 0.2s, max-height 0.5s ease 0.2s",
+        pointerEvents: phase === "done" ? "auto" : "none",
+        marginTop: phase === "done" ? 20 : 0,
+      }}>
+        {result && (
+          <div style={{ animation:"resultPop .6s cubic-bezier(.34,1.56,.64,1) both" }}>
+            <div style={{ fontSize:48, marginBottom:10 }}>🌊</div>
+            <p style={{ fontFamily:"'Fredoka',sans-serif", fontSize:18, fontWeight:700, color:"#ffe24d", margin:"0 0 4px" }}>
+              Sungai membawamu...
+            </p>
+            <p style={{ fontSize:13, color:"rgba(255,255,255,.7)", fontWeight:600 }}>
+              Arah yang dipilih jiwamu
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

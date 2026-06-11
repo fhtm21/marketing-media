@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Stage 7 — Sunrise Path
 // Q: "Mimpi kamu 10 tahun lagi?"
@@ -11,7 +11,6 @@ const ELEMENTS = [
     title: "Warisan Digital",
     desc: "Bisnis keluarga naik kelas jadi brand digital",
     color: "#5b8cff",
-    appearAt: 0,
   },
   {
     key: "design",
@@ -19,66 +18,59 @@ const ELEMENTS = [
     title: "Karya yang Dicintai",
     desc: "Brand / produk yang dicintai karena desainnya",
     color: "#b06bff",
-    appearAt: 800,
   },
   {
     key: "change",
     emoji: "🌱",
     title: "Dampak Nyata",
-    desc: "Bisnis yang punya dampak sosial buat banyak orang",
+    desc: "Menciptakan bisnis yang membawa dampak sosial bagi masyarakat luas",
     color: "#2ecc8f",
-    appearAt: 1600,
   },
   {
     key: "strat",
     emoji: "📈",
     title: "Kerajaan Bisnis",
-    desc: "Bangun & gedein banyak usaha sekaligus",
+    desc: "Membangun & mengembangkan banyak bisnis sekaligus",
     color: "#ffb020",
-    appearAt: 2400,
   },
 ];
 
 export default function DreamStage7_SunrisePath({ onComplete }) {
   const [visible, setVisible] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [sunProgress, setSunProgress] = useState(0);
+  const [dawnArrived, setDawnArrived] = useState(false);
+
+  const timersRef = useRef([]);
 
   useEffect(() => {
-    // Reveal elements one by one
-    ELEMENTS.forEach((el) => {
-      setTimeout(() => {
+    // Trigger CSS sunrise animation on mount
+    setDawnArrived(true);
+
+    // Reveal elements one by one with speeded-up stagger delay
+    ELEMENTS.forEach((el, index) => {
+      const t = setTimeout(() => {
         setVisible((v) => [...v, el.key]);
-      }, el.appearAt + 200);
+      }, index * 350 + 200);
+      timersRef.current.push(t);
     });
 
-    // Animate sun rising
-    const interval = setInterval(() => {
-      setSunProgress((p) => {
-        if (p >= 100) { clearInterval(interval); return 100; }
-        return p + 2;
-      });
-    }, 70);
-    return () => clearInterval(interval);
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+    };
   }, []);
 
   const pick = (el) => {
     if (selected || !visible.includes(el.key)) return;
+    // Clear remaining timers so no more cards pop in during transition
+    timersRef.current.forEach(clearTimeout);
     setSelected(el);
     setTimeout(() => onComplete(el.key), 1200);
   };
 
-  // Sunrise sky color: dark blue → orange glow
-  const skyBg = `linear-gradient(180deg,
-    rgba(${Math.round(10 + sunProgress * .5)},${Math.round(8 + sunProgress * .3)},${Math.round(38 + sunProgress * .1)},1) 0%,
-    rgba(${Math.round(30 + sunProgress * 1.2)},${Math.round(15 + sunProgress * .6)},${Math.round(60 + sunProgress * .2)},1) 40%,
-    rgba(${Math.round(80 + sunProgress * 1.5)},${Math.round(40 + sunProgress)},${Math.round(10)},1) 100%
-  )`;
-
   return (
     <div style={{ width: "100%", textAlign: "center" }}>
       <style>{`
-        @keyframes sunRise { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes sunRise { from{transform:translateY(65px);opacity:0} to{transform:translateY(12px);opacity:1} }
         @keyframes elementAppear { from{opacity:0;transform:translateY(14px) scale(.9)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes sunGlow {
           0%,100% { box-shadow: 0 0 20px rgba(255,176,32,.4), 0 0 40px rgba(255,120,30,.2); }
@@ -102,44 +94,66 @@ export default function DreamStage7_SunrisePath({ onComplete }) {
         Apa yang Menarik Perhatianmu Saat Fajar Tiba?
       </h2>
       <p style={{ fontSize: 13.5, color: "#ffb4a2", fontWeight: 600, margin: "0 0 18px", opacity: .9 }}>
-        Mimpi kamu 10 tahun lagi?
+        Bagaimana impianmu 10 tahun ke depan?
       </p>
 
-      {/* Sunrise panorama */}
+      {/* Sunrise panorama container */}
       <div style={{
         position: "relative", borderRadius: 22, overflow: "hidden",
-        background: skyBg, border: "1px solid rgba(255,176,32,.15)",
+        background: "linear-gradient(180deg, #0a0826 0%, #1e0f3c 40%, #50280a 100%)",
+        border: "1px solid rgba(255,176,32,.15)",
         marginBottom: 18, padding: "20px 16px 16px",
-        minHeight: 160, transition: "background 1s",
+        minHeight: 160,
       }}>
-        {/* Sun */}
+        {/* Sunrise Sky Overlay (Hardware-accelerated CSS transition) */}
         <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, #3c264e 0%, #a83c74 40%, #ff8c0a 100%)",
+          opacity: dawnArrived ? 1 : 0,
+          transition: "opacity 3.5s cubic-bezier(0.25, 1, 0.5, 1)",
+          zIndex: 0,
+          pointerEvents: "none",
+        }} />
+
+        {/* Sun (rises dynamically from below the horizon) */}
+        <div style={{
+          position: "relative",
+          zIndex: 1,
           width: 52, height: 52, borderRadius: "50%",
           background: "radial-gradient(circle, #fffde7, #ffb020)",
           margin: "0 auto 16px",
-          transform: `translateY(${Math.max(0, 20 - sunProgress * .2)}px)`,
-          opacity: Math.min(1, sunProgress * .015),
+          transform: dawnArrived ? "translateY(12px)" : "translateY(65px)",
+          opacity: dawnArrived ? 1 : 0,
           animation: "sunGlow 3s ease-in-out infinite",
-          transition: "transform .5s, opacity .5s",
+          transition: "transform 3.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 3.5s ease",
         }} />
 
         {/* Horizon line */}
         <div style={{
+          position: "relative",
+          zIndex: 1,
           height: 1,
-          background: `linear-gradient(90deg, transparent, rgba(255,176,32,${Math.min(.6, sunProgress * .006)}), transparent)`,
+          background: `linear-gradient(90deg, transparent, rgba(255,176,32,${dawnArrived ? .6 : .1}), transparent)`,
+          transition: "background 3.5s ease",
           marginBottom: 14,
         }} />
 
         {/* Tip text */}
         {visible.length < ELEMENTS.length && (
-          <p style={{ fontSize: 12, color: "rgba(255,210,162,.7)", fontWeight: 600, margin: 0 }}>
+          <p style={{ position: "relative", zIndex: 1, fontSize: 12, color: "rgba(255,210,162,.7)", fontWeight: 600, margin: 0 }}>
             Elemen bermunculan saat fajar terbit...
           </p>
         )}
       </div>
 
-      {/* Elements grid */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+      {/* Elements Grid using CSS Grid for alignment & equal heights */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(2, 1fr)", 
+        gap: 10, 
+        width: "100%",
+        boxSizing: "border-box" 
+      }}>
         {ELEMENTS.map((el) => {
           const isVisible = visible.includes(el.key);
           const isSelected = selected?.key === el.key;
@@ -152,7 +166,9 @@ export default function DreamStage7_SunrisePath({ onComplete }) {
               onClick={() => pick(el)}
               disabled={!!selected || isLocked}
               style={{
-                width: "calc(50% - 8px)",
+                width: "100%",
+                boxSizing: "border-box",
+                height: "100%",
                 borderRadius: 18,
                 border: isSelected
                   ? `2px solid ${el.color}`
