@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import OrbitRocketAdventure from "./OrbitRocketAdventure";
 import StartupDestinyRPG from "./StartupDestinyRPG";
+import PolarPenguinGame from "./games/polar-penguin/index";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap');
@@ -39,6 +40,22 @@ const GAMES = [
     btnColor: "#a0379a",
     btnText: "Temukan Tipe Founder ✨",
   },
+  {
+    id: "polar",
+    emoji: "🐧",
+    title: "Polar IT Portal",
+    program: "Business Information Technology",
+    description: "Kelola pasar arktik, rancang topologi jaringan, dan kuasai konsep Business IT melalui simulasi interaktif!",
+    tags: ["E-Commerce Analytics", "System Topology", "BINUS @Bekasi"],
+    gradient: "linear-gradient(135deg, #020c1b 0%, #0a2540 55%, #051a30 100%)",
+    accent: "#38bdf8",
+    tagBg: "rgba(56,189,248,0.16)",
+    tagBorder: "rgba(56,189,248,0.4)",
+    glowColor: "#7dd3fc",
+    btnBg: "linear-gradient(90deg,#0ea5e9,#38bdf8)",
+    btnColor: "#020c1b",
+    btnText: "Mulai Ekspedisi Arktik 🐧",
+  },
 ];
 
 export default function GameHub() {
@@ -46,6 +63,7 @@ export default function GameHub() {
 
   if (active === "orbit") return <OrbitRocketAdventure onBack={() => setActive(null)} />;
   if (active === "destiny") return <StartupDestinyRPG onBack={() => setActive(null)} />;
+  if (active === "polar") return <PolarPenguinGame onBack={() => setActive(null)} />;
 
   return (
     <div style={{
