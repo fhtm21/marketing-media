@@ -124,8 +124,8 @@ export default function DreamStage3_ConstellationAim({ onComplete }) {
         position:"relative", marginBottom:16,
       }}>
         <svg
-          width={SVG_W} height={SVG_H}
-          style={{ display:"block", touchAction:"none" }}
+          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+          style={{ display:"block", width:"100%", height:"auto", maxWidth:SVG_W, touchAction:"none" }}
         >
           {/* Faint constellation lines (winner reveal) */}
           {phase === "done" && meta && meta.lines.map(([a,b], i) => {
