@@ -29,7 +29,7 @@ export const MODULES_CONFIG = [
     icon: '📈',
     concept: 'Digital Marketing',
     requires: 'network',
-    active: false,
+    active: true,
   },
   {
     id: 'sorter',

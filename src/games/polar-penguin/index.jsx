@@ -7,6 +7,7 @@ import PolarIntro from './components/PolarIntro.jsx';
 import PolarHub from './components/PolarHub.jsx';
 import MarketTycoon from './components/MarketTycoon.jsx';
 import NetworkArchitect from './components/NetworkArchitect.jsx';
+import Trendsetter from './components/Trendsetter.jsx';
 import ComingSoon from './components/ComingSoon.jsx';
 
 const POLAR_FONTS = `@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&family=Fredoka:wght@500;600;700&display=swap');`;
@@ -148,8 +149,16 @@ export default function PolarPenguinGame({ onBack }) {
           />
         )}
 
-        {/* ── MODULE 3-5: COMING SOON PLACEHOLDERS ── */}
-        {[ROOT_PHASES.TRENDSETTER, ROOT_PHASES.SORTER, ROOT_PHASES.EXPEDITION].includes(phase) && (
+        {/* ── MODULE 3: POLAR TRENDSETTER ── */}
+        {phase === ROOT_PHASES.TRENDSETTER && (
+          <Trendsetter
+            onExit={() => setPhase(ROOT_PHASES.HUB)}
+            onComplete={(score) => completeModule('trendsetter', score, getConceptName('trendsetter'))}
+          />
+        )}
+
+        {/* ── MODULE 4-5: COMING SOON PLACEHOLDERS ── */}
+        {[ROOT_PHASES.SORTER, ROOT_PHASES.EXPEDITION].includes(phase) && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ComingSoon
               moduleTitle={MODULES_CONFIG.find(m => m.id === phase)?.title || 'Modul'}
