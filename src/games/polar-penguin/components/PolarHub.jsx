@@ -64,24 +64,41 @@ export default function PolarHub({
       position: 'relative',
     }}>
       <style>{`
-        @keyframes PH_pulse  { 0%,100%{box-shadow:0 0 10px rgba(56,189,248,.3)} 50%{box-shadow:0 0 25px rgba(56,189,248,.6)} }
-        @keyframes PH_fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes PH_glow   { 0%,100%{opacity:.6} 50%{opacity:1} }
-        .PH_card { transition: transform .2s, box-shadow .2s; cursor:pointer; }
-        .PH_card:hover { transform: translateX(4px); }
+        @keyframes PH_pulse  { 0%,100%{box-shadow:0 0 10px rgba(0,240,255,.3)} 50%{box-shadow:0 0 25px rgba(0,240,255,.65)} }
+        @keyframes PH_fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes PH_glow   { 0%,100%{opacity:.4} 50%{opacity:1} }
+        @keyframes PH_cyber_scroll {
+          from { background-position: 0 0; }
+          to { background-position: 0 100%; }
+        }
+        .PH_card { transition: transform .22s, box-shadow .22s, background .22s; cursor:pointer; }
+        .PH_card:hover { transform: translateX(6px); background: rgba(0,240,255,0.06) !important; box-shadow: 0 0 15px rgba(0,240,255,0.15); }
         .PH_card-locked { cursor: not-allowed; }
-        .PH_node { transition: transform .15s; }
-        .PH_node:hover { transform: scale(1.08); }
+        .PH_node { transition: transform .15s, box-shadow .15s; }
+        .PH_node:hover { transform: scale(1.12); }
         .PH_mode-btn { transition: all .2s; border:none; cursor:pointer; }
         .PH_link { transition: opacity .2s; text-decoration:none; }
         .PH_link:hover { opacity: .75; }
+        .PH_grid_overlay {
+          position: absolute; inset: 0;
+          background-image: 
+            linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+          background-size: 30px 30px;
+          animation: PH_cyber_scroll 30s linear infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
       `}</style>
+
+      {/* Futuristic Cyber-Grid Background */}
+      <div className="PH_grid_overlay" />
 
       {/* ── Header ── */}
       <header style={{
         padding: '14px 20px', flexShrink: 0,
-        background: 'rgba(2,12,27,0.9)',
-        borderBottom: '1px solid rgba(56,189,248,0.15)',
+        background: 'rgba(3,6,17,0.92)',
+        borderBottom: '1px solid rgba(0,240,255,0.18)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         zIndex: 10,
       }}>
@@ -90,7 +107,7 @@ export default function PolarHub({
             onClick={onBack}
             style={{
               fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700,
-              color: 'rgba(56,189,248,.7)', background: 'transparent', border: 'none',
+              color: 'rgba(0,240,255,.7)', background: 'transparent', border: 'none',
               cursor: 'pointer', padding: '4px 0',
             }}
           >
@@ -98,11 +115,11 @@ export default function PolarHub({
           </button>
           <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,.1)' }} />
           <div>
-            <p style={{ fontSize: 8, letterSpacing: 2.5, textTransform: 'uppercase', color: '#38bdf8', fontWeight: 800, margin: 0, opacity: .8 }}>
+            <p style={{ fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: '#00f0ff', fontWeight: 900, margin: 0, fontFamily: "'Orbitron', sans-serif" }}>
               POLAR IT PORTAL
             </p>
-            <p style={{ fontSize: 7.5, color: '#475569', fontWeight: 700, margin: 0, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-              BINUS @Bekasi
+            <p style={{ fontSize: 7.5, color: '#f48120', fontWeight: 800, margin: 0, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              BINUS @BEKASI // SYS_V2
             </p>
           </div>
         </div>
@@ -110,12 +127,13 @@ export default function PolarHub({
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Total Score */}
           <div style={{
-            background: 'rgba(2,12,27,.8)', border: '1px solid rgba(56,189,248,.2)',
-            padding: '4px 10px', borderRadius: 20,
+            background: 'rgba(3,6,17,.8)', border: '1px solid rgba(0,240,255,.25)',
+            padding: '4px 12px', borderRadius: 20,
             display: 'flex', alignItems: 'center', gap: 5,
+            boxShadow: '0 0 10px rgba(0,240,255,0.15)',
           }}>
-            <span style={{ fontSize: 8, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Score:</span>
-            <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#fbbf24', fontSize: 13 }}>{totalScore}</span>
+            <span style={{ fontSize: 8, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>XP SCORE:</span>
+            <span style={{ fontFamily: 'monospace', fontWeight: 900, color: '#fbbf24', fontSize: 13 }}>{totalScore}</span>
           </div>
           {/* Info button */}
           <button
@@ -123,8 +141,8 @@ export default function PolarHub({
             onClick={() => setShowBinusInfo(true)}
             style={{
               width: 28, height: 28, borderRadius: '50%',
-              background: 'rgba(56,189,248,.1)', border: '1px solid rgba(56,189,248,.2)',
-              color: '#38bdf8', cursor: 'pointer', fontSize: 13, display: 'flex',
+              background: 'rgba(0,240,255,.1)', border: '1px solid rgba(0,240,255,.25)',
+              color: '#00f0ff', cursor: 'pointer', fontSize: 13, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
             }}
           >ℹ</button>
@@ -132,15 +150,15 @@ export default function PolarHub({
       </header>
 
       {/* ── Play Mode Toggle ── */}
-      <div style={{ padding: '16px 20px 0', flexShrink: 0 }}>
+      <div style={{ padding: '14px 20px 0', flexShrink: 0, zIndex: 1 }}>
         <div style={{
           display: 'flex', padding: 4,
-          background: 'rgba(7,21,37,.8)', borderRadius: 12,
-          border: '1px solid rgba(56,189,248,.12)',
+          background: 'rgba(3,6,17,.85)', borderRadius: 12,
+          border: '1px solid rgba(0,240,255,.15)',
         }}>
           {[
-            { key: 'journey', label: 'Guided Journey', color: '#0ea5e9' },
-            { key: 'freeplay', label: 'Sandbox Free-Play', color: '#06b6d4' },
+            { key: 'journey', label: 'Guided Journey', color: '#f48120' },
+            { key: 'freeplay', label: 'Sandbox Free-Play', color: '#00f0ff' },
           ].map((m) => (
             <button
               key={m.key}
@@ -153,165 +171,222 @@ export default function PolarHub({
                 flex: 1, padding: '8px 6px', borderRadius: 9, fontSize: 11, fontWeight: 800,
                 fontFamily: "'Nunito', sans-serif",
                 background: playMode === m.key ? m.color : 'transparent',
-                color: playMode === m.key ? '#020c1b' : '#64748b',
-                boxShadow: playMode === m.key ? `0 2px 12px ${m.color}44` : 'none',
+                color: playMode === m.key ? '#030611' : '#64748b',
+                boxShadow: playMode === m.key ? `0 2px 12px ${m.color}55` : 'none',
               }}
             >
               {m.label}
             </button>
           ))}
         </div>
-        <p style={{
-          fontSize: 10, color: '#475569', textAlign: 'center', margin: '8px 0 0',
-          fontWeight: 600, lineHeight: 1.5,
-        }}>
-          {playMode === 'journey'
-            ? 'Selesaikan modul berurutan untuk mendapatkan Business IT certification.'
-            : 'Semua modul terbuka — eksplorasi bebas tanpa batasan urutan.'}
-        </p>
       </div>
 
+      {/* ── Guided Targets & Instructions Banner (Easy to Understand) ── */}
+      {playMode === 'journey' && (
+        <div style={{ padding: '16px 20px 0', flexShrink: 0, zIndex: 1 }}>
+          {(() => {
+            let stepTitle = "";
+            let stepDesc = "";
+            let stepTargetId = "";
+
+            if (!completedModules.market) {
+              stepTitle = "TARGET 01 // MARKETS FORECAST";
+              stepDesc = "Analisis pola cuaca kutub dan tetapkan harga pasokan ikan terbaik di Market Tycoon.";
+              stepTargetId = "market";
+            } else if (!completedModules.network) {
+              stepTitle = "TARGET 02 // ROUTING SCHEMATIC";
+              stepDesc = "Hubungkan Igloo Server utama ke semua Client peripheral dengan aman di Network Architect.";
+              stepTargetId = "network";
+            } else if (!completedModules.trendsetter) {
+              stepTitle = "TARGET 03 // AUDIENCE ENGAGEMENT";
+              stepDesc = "Susun hashtag digital marketing yang optimal untuk memaksimalkan kampanye di Polar Trendsetter.";
+              stepTargetId = "trendsetter";
+            } else if (!completedModules.sorter) {
+              stepTitle = "TARGET 04 // DATA NORMALIZATION";
+              stepDesc = "Sortir paket data transaksional, metadata, dan error log ke tabel relasional di Data Sorter.";
+              stepTargetId = "sorter";
+            } else if (!completedModules.expedition) {
+              stepTitle = "TARGET 05 // AGILE RESOLUTION";
+              stepDesc = "Kerahkan tim ekspedisi Arctic secara sprint teratur untuk menyelesaikan ekspedisi.";
+              stepTargetId = "expedition";
+            } else {
+              stepTitle = "🏆 PIPELINE COMPLETED // CERTIFIED";
+              stepDesc = "Semua modul berhasil dimasteri! Kamu siap menguasai program kurikulum Business IT BINUS.";
+            }
+
+            return (
+              <div style={{
+                background: "rgba(3, 6, 17, 0.75)",
+                border: "1.5px solid #00f0ff",
+                borderRadius: 12, padding: "14px 16px",
+                boxShadow: "0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0,240,255,0.05)",
+                display: "flex", gap: 12, alignItems: "center"
+              }}>
+                <span style={{ fontSize: 28 }}>🎯</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "11px", fontWeight: 900, color: "#f48120", fontFamily: "monospace", letterSpacing: 1.2 }}>
+                    {stepTitle}
+                  </div>
+                  <p style={{ fontSize: "13px", color: "#e2e8f0", margin: "4px 0 0", lineHeight: 1.45, fontWeight: "bold" }}>
+                    {stepDesc}
+                  </p>
+                  {stepTargetId && (
+                    <button
+                      onClick={() => {
+                        const targetMod = MODULES_CONFIG.find(m => m.id === stepTargetId);
+                        if (targetMod) handleSelectModule(targetMod);
+                      }}
+                      style={{
+                        background: "rgba(0, 240, 255, 0.12)", border: "1px solid rgba(0, 240, 255, 0.4)",
+                        color: "#00f0ff", borderRadius: 8, padding: "6px 12px", fontSize: "11px",
+                        fontFamily: "monospace", fontWeight: "bold", marginTop: 8, cursor: "pointer",
+                        transition: "background 0.2s"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(0, 240, 255, 0.2)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(0, 240, 255, 0.12)"}
+                    >
+                      KLIK UNTUK MEMULAI TARGET ➜
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* ── Journey Title ── */}
-      <div style={{ textAlign: 'center', padding: '16px 20px 8px', flexShrink: 0 }}>
+      <div style={{ textAlign: 'center', padding: '18px 20px 8px', flexShrink: 0, zIndex: 1 }}>
         <h2 style={{
-          fontSize: 13, fontWeight: 800, color: '#e0f2fe',
-          letterSpacing: 2, textTransform: 'uppercase', margin: 0,
-        }}>Arctic IT Pipeline</h2>
+          fontSize: 14, fontWeight: 900, color: '#e0f2fe',
+          letterSpacing: 2.5, textTransform: 'uppercase', margin: 0,
+          fontFamily: "'Orbitron', sans-serif", textShadow: "0 0 12px rgba(255,255,255,0.15)"
+        }}>
+          🐧 ARCTIC DATA PIPELINE MAP
+        </h2>
       </div>
 
       {/* ── Module Timeline ── */}
-      <div style={{ flex: 1, padding: '8px 16px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ flex: 1, padding: '8px 20px 24px', display: 'flex', flexDirection: 'column', gap: 14, zIndex: 1 }}>
         {MODULES_CONFIG.map((mod, index) => {
           const isUnlocked = playMode === 'freeplay' || !mod.requires || !!completedModules[mod.requires];
           const isCompleted = !!completedModules[mod.id];
           const isActive = isUnlocked && !isCompleted;
           const isLocked = !isUnlocked;
 
-          let nodeStyle = {};
-          let cardBg = {};
+          let cardStyle = {};
           let statusLabel = '';
-          let statusColor = '#475569';
+          let statusColor = '#64748b';
 
           if (isCompleted) {
-            nodeStyle = { background: '#10b981', border: '2px solid #10b981', color: '#020c1b' };
-            cardBg = { background: 'rgba(16,185,129,.08)', border: '1px solid rgba(16,185,129,.3)' };
-            statusLabel = 'Station Mastered';
+            cardStyle = {
+              background: 'rgba(16,185,129,0.06)',
+              borderColor: 'rgba(16,185,129,0.3)',
+              boxShadow: '0 4px 12px rgba(16,185,129,0.05)'
+            };
+            statusLabel = '✓ PIPELINE MASTERED';
             statusColor = '#10b981';
           } else if (isActive) {
-            nodeStyle = {
-              background: '#0ea5e9', border: '2px solid #38bdf8', color: '#fff',
-              animation: 'PH_pulse 2.5s ease-in-out infinite',
+            cardStyle = {
+              background: 'rgba(0,240,255,0.05)',
+              borderColor: 'rgba(0,240,255,0.38)',
+              boxShadow: '0 4px 20px rgba(0,240,255,0.12)',
+              animation: 'PH_pulse 2.2s ease-in-out infinite'
             };
-            cardBg = {
-              background: 'rgba(14,165,233,.08)', border: '1px solid rgba(56,189,248,.35)',
-              boxShadow: '0 4px 20px rgba(14,165,233,.1)',
-            };
-            statusLabel = mod.active ? 'Active Station' : 'Preview Only';
-            statusColor = '#38bdf8';
+            statusLabel = mod.active ? '▶ ACTIVE PIPELINE' : '⚙️ PREVIEW SPEC';
+            statusColor = '#00f0ff';
           } else {
-            nodeStyle = { background: 'rgba(15,23,42,.8)', border: '2px solid #1e293b', color: '#334155' };
-            cardBg = { background: 'rgba(15,23,42,.4)', border: '1px solid rgba(30,41,59,.6)', opacity: isLocked ? .55 : .7 };
-            statusLabel = isLocked ? 'Pipeline Locked' : 'Unlocked';
-            statusColor = '#334155';
+            cardStyle = {
+              background: 'rgba(15,23,42,0.35)',
+              borderColor: 'rgba(255,255,255,0.08)',
+              opacity: 0.55
+            };
+            statusLabel = '🔒 PIPELINE LOCKED';
+            statusColor = '#64748b';
           }
 
           return (
-            <div key={mod.id} style={{ display: 'flex', alignItems: 'stretch', gap: 10, animation: `PH_fadeIn .4s ${index * .08}s ease both` }}>
-              {/* Left: node + connector */}
-              <div style={{ width: 52, display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                {/* Connector line above */}
-                {index > 0 && (
-                  <div style={{
-                    width: 2, height: 14, marginBottom: 2, borderRadius: 2,
-                    background: isCompleted || (MODULES_CONFIG[index - 1] && !!completedModules[MODULES_CONFIG[index - 1].id])
-                      ? 'linear-gradient(to bottom, #10b981, #059669)'
-                      : 'rgba(30,41,59,.6)',
-                  }} />
-                )}
-
-                {/* Node button */}
-                <button
-                  className="PH_node"
-                  onClick={() => handleSelectModule(mod)}
-                  aria-label={`${mod.title}: ${statusLabel}`}
-                  style={{
-                    width: 44, height: 44, borderRadius: 12, fontSize: 18,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: isLocked ? 'not-allowed' : 'pointer', border: 'none',
-                    flexShrink: 0, position: 'relative',
-                    ...nodeStyle,
-                  }}
-                >
-                  {isCompleted
-                    ? <CHECK_ICON />
-                    : isLocked
-                      ? <LOCK_ICON />
-                      : mod.icon}
-                </button>
-
-                {/* Connector line below */}
-                {index < MODULES_CONFIG.length - 1 && (
-                  <div style={{
-                    width: 2, flex: 1, minHeight: 14, marginTop: 2, borderRadius: 2,
-                    background: isCompleted
-                      ? 'linear-gradient(to bottom, #059669, #10b981)'
-                      : 'rgba(30,41,59,.6)',
-                  }} />
-                )}
+            <div
+              key={mod.id}
+              onClick={() => handleSelectModule(mod)}
+              role="button"
+              tabIndex={isLocked ? -1 : 0}
+              onKeyDown={(e) => e.key === 'Enter' && handleSelectModule(mod)}
+              className={isLocked ? 'PH_card-locked' : 'PH_card'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 16,
+                border: '1.5px solid', borderRadius: 16, padding: '14px 18px',
+                minHeight: 80, transition: 'all 0.2s',
+                animation: `PH_fadeIn .35s ${index * .06}s ease both`,
+                position: 'relative',
+                ...cardStyle
+              }}
+            >
+              {/* Left Side: Large Familiar Status Icon */}
+              <div style={{
+                width: 48, height: 48, borderRadius: 12,
+                background: isCompleted ? 'rgba(16,185,129,0.15)' : isActive ? 'rgba(0,240,255,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `1.5px solid ${isCompleted ? '#10b981' : isActive ? '#00f0ff' : 'rgba(255,255,255,0.1)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, flexShrink: 0
+              }}>
+                {isCompleted ? '✅' : isLocked ? '🔒' : mod.icon}
               </div>
 
-              {/* Right: info card */}
-              <div
-                className={isLocked ? 'PH_card-locked' : 'PH_card'}
-                onClick={() => handleSelectModule(mod)}
-                role="button"
-                tabIndex={isLocked ? -1 : 0}
-                onKeyDown={(e) => e.key === 'Enter' && handleSelectModule(mod)}
-                style={{
-                  flex: 1, borderRadius: 14, padding: '10px 14px',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                  gap: 2, minHeight: 64,
-                  ...cardBg,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Center Info: Large text size for UI/UX principles */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
                   <span style={{
-                    fontSize: 8, textTransform: 'uppercase', letterSpacing: 1.5,
-                    fontWeight: 800, color: statusColor,
+                    fontSize: '10px', textTransform: 'uppercase', letterSpacing: 1.5,
+                    fontWeight: 900, color: statusColor, fontFamily: 'monospace'
                   }}>
                     {statusLabel}
                   </span>
                   {isCompleted && (
                     <span style={{
-                      fontSize: 9, fontWeight: 800, color: '#10b981',
-                      background: 'rgba(16,185,129,.12)', padding: '2px 8px', borderRadius: 20,
+                      fontSize: '11px', fontWeight: 900, color: '#10b981',
+                      background: 'rgba(16,185,129,0.12)', padding: '2px 8px', borderRadius: 20,
+                      fontFamily: 'monospace'
                     }}>
                       +{completedModules[mod.id].score} XP
                     </span>
                   )}
                   {!mod.active && !isCompleted && (
                     <span style={{
-                      fontSize: 8, fontWeight: 800, color: '#f59e0b',
-                      background: 'rgba(245,158,11,.1)', padding: '2px 8px', borderRadius: 20,
+                      fontSize: '9px', fontWeight: 900, color: '#f59e0b',
+                      background: 'rgba(245,158,11,0.12)', padding: '2px 8px', borderRadius: 20,
+                      fontFamily: 'monospace'
                     }}>
-                      Coming Soon
+                      COMING SOON
                     </span>
                   )}
                 </div>
                 <h3 style={{
-                  fontSize: 12, fontWeight: 800, margin: '2px 0 0',
-                  color: isLocked ? '#334155' : '#e0f2fe',
+                  fontSize: '16px', fontWeight: 900, margin: 0,
+                  color: isLocked ? '#475569' : '#e0f2fe',
                   textTransform: 'uppercase', letterSpacing: 0.5,
+                  fontFamily: "'Orbitron', sans-serif",
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                 }}>
                   {mod.title}
                 </h3>
                 <p style={{
-                  fontSize: 10, margin: 0, fontWeight: 600,
-                  color: isLocked ? '#1e293b' : '#64748b',
+                  fontSize: '13px', margin: 0, fontWeight: 600,
+                  color: isLocked ? '#334155' : '#8492a6',
                 }}>
                   {mod.concept}
                 </p>
               </div>
+
+              {/* Right Side: Navigation arrow clue */}
+              {!isLocked && (
+                <div style={{
+                  fontSize: 18, color: isCompleted ? '#10b981' : '#00f0ff',
+                  opacity: 0.65, display: 'flex', alignItems: 'center'
+                }}>
+                  ➔
+                </div>
+              )}
             </div>
           );
         })}
@@ -320,10 +395,11 @@ export default function PolarHub({
       {/* ── Footer ── */}
       <footer style={{
         textAlign: 'center', padding: '12px 20px 16px', flexShrink: 0,
-        borderTop: '1px solid rgba(30,41,59,.6)',
+        borderTop: '1px solid rgba(0, 240, 255, 0.15)',
+        background: 'rgba(3,6,17,0.88)', zIndex: 1
       }}>
-        <p style={{ fontSize: 8, color: '#334155', fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', margin: '0 0 6px' }}>
-          BINUS @Bekasi — Business Information Technology
+        <p style={{ fontSize: 8, color: '#475569', fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', margin: '0 0 6px', fontFamily: "monospace" }}>
+          School of Information Systems • BINUS UNIVERSITY @Bekasi
         </p>
         {hasCompleted && (
           <button

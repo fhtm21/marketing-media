@@ -37,7 +37,7 @@ export const MODULES_CONFIG = [
     icon: '🗄️',
     concept: 'Database Management',
     requires: 'trendsetter',
-    active: false,
+    active: true,
   },
   {
     id: 'expedition',
@@ -45,6 +45,6 @@ export const MODULES_CONFIG = [
     icon: '🧭',
     concept: 'Agile Management',
     requires: 'sorter',
-    active: false,
+    active: true,
   },
 ];

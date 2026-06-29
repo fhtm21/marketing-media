@@ -45,4 +45,14 @@ export const SOUNDS = {
   splitterHit: () => synthPlay(587.33, 0.2, 'sine'),
   budgetOver: () => synthPlay(120, 0.25, 'sawtooth'),
   modeSwitch: (isJourney) => synthPlay(isJourney ? 440 : 520, 0.1, 'sine'),
+  // Data Stream Sorter
+  dropCorrect: () => synthPlay(880, 0.18, 'sine'),
+  dropWrong:   () => synthPlay(150, 0.2, 'sawtooth'),
+  itemMiss:    () => synthPlay(200, 0.28, 'sawtooth'),
+  // Expedition Sprint
+  cardSelect:       () => synthPlay(523.25, 0.08, 'triangle'),
+  cardAssign:       () => synthPlay(659.25, 0.12, 'sine'),
+  obstacleCleared:  () => synthPlay(783.99, 0.3, 'sine'),
+  obstacleFailed:   () => synthPlay(130, 0.35, 'sawtooth'),
+  sprintComplete:   () => { synthPlay(659.25, 0.12, 'sine'); setTimeout(() => synthPlay(783.99, 0.18, 'sine'), 150); setTimeout(() => synthPlay(1046.5, 0.3, 'sine'), 300); },
 };

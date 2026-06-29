@@ -986,8 +986,38 @@ export default function GameHub() {
             <div className="hud-panel hud-col3-panel" style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
               <PanelCorners color="rgba(0, 240, 255, 0.2)" />
               
-              {/* Section A: RPG Stats HUD */}
-              <div className="hud-col3-sec-gap" style={{ display: "flex", flexDirection: "column", flex: 1.3 }}>
+              {/* Section A: Cyber Student Dossier */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 10, borderBottom: "1px dashed rgba(0, 240, 255, 0.15)" }}>
+                <span style={{ fontSize: "9px", color: "#64748b", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, fontFamily: "'Orbitron', sans-serif" }}>
+                  📂 COGNITIVE DOSSIER
+                </span>
+                <div style={{
+                  background: "rgba(0, 240, 255, 0.03)", border: "1px solid rgba(0, 240, 255, 0.12)",
+                  borderRadius: 8, padding: "8px 10px", display: "flex", gap: 10, alignItems: "center"
+                }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%", background: "rgba(0, 240, 255, 0.1)",
+                    border: "1px solid rgba(0, 240, 255, 0.35)", display: "flex", alignItems: "center",
+                    justifyContent: "center", fontSize: 16, boxShadow: "0 0 10px rgba(0, 240, 255, 0.2)"
+                  }}>
+                    👨‍💻
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0, fontFamily: "monospace" }}>
+                    <div style={{ fontSize: "10px", fontWeight: "bold", color: "#00f0ff", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      VOYAGER // USER_081
+                    </div>
+                    <div style={{ fontSize: "8.5px", color: "#64748b", marginTop: 2, lineHeight: 1.1 }}>
+                      DBI & Business IT Candidate
+                    </div>
+                    <div style={{ fontSize: "7px", color: "#f48120", fontWeight: "bold", marginTop: 2 }}>
+                      STATUS: CORE_ACTIVE // OK
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section B: RPG Stats HUD */}
+              <div className="hud-col3-sec-gap" style={{ display: "flex", flexDirection: "column", flex: 1.3, marginTop: 10 }}>
                 <div style={{ paddingBottom: 6, borderBottom: "1px solid rgba(0, 240, 255, 0.15)" }}>
                   <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, fontFamily: "'Orbitron', sans-serif" }}>
                     ⚔️ HUNTER CAPABILITIES

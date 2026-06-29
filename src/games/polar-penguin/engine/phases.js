@@ -59,3 +59,43 @@ export function networkTransition(currentPhase, action) {
   };
   return map[currentPhase]?.[action] ?? currentPhase;
 }
+
+/** Fase internal Data Stream Sorter */
+export const SORTER_PHASES = {
+  BRIEFING: 'briefing',
+  PLAYING: 'playing',
+  LEVEL_DONE: 'levelDone',
+  GAMEOVER: 'gameover',
+};
+
+export function sorterTransition(currentPhase, action) {
+  const map = {
+    briefing:  { START: 'playing' },
+    playing:   { LEVEL_DONE: 'levelDone', GAMEOVER: 'gameover' },
+    levelDone: { NEXT: 'briefing', FINISH: 'gameover' },
+    gameover:  { RESTART: 'briefing' },
+  };
+  return map[currentPhase]?.[action] ?? currentPhase;
+}
+
+/** Fase internal Expedition Sprint */
+export const EXPEDITION_PHASES = {
+  BRIEFING:    'briefing',
+  PLANNING:    'planning',    // Pemain assign kartu ke obstacle
+  RESOLVING:   'resolving',   // Animasi resolusi (auto 1.5 detik)
+  SPRINT_DONE: 'sprintDone',  // Hasil sprint
+  GAMEOVER:    'gameover',
+  COMPLETED:   'completed',
+};
+
+export function expeditionTransition(currentPhase, action) {
+  const map = {
+    briefing:   { START: 'planning' },
+    planning:   { RESOLVE: 'resolving' },
+    resolving:  { DONE: 'sprintDone' },
+    sprintDone: { NEXT: 'briefing', FINISH: 'completed', FAIL: 'gameover' },
+    gameover:   { RESTART: 'briefing' },
+    completed:  {},
+  };
+  return map[currentPhase]?.[action] ?? currentPhase;
+}

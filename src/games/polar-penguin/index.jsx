@@ -8,6 +8,8 @@ import PolarHub from './components/PolarHub.jsx';
 import MarketTycoon from './components/MarketTycoon.jsx';
 import NetworkArchitect from './components/NetworkArchitect.jsx';
 import Trendsetter from './components/Trendsetter.jsx';
+import DataSorter from './components/DataSorter.jsx';
+import Expedition from './components/Expedition.jsx';
 import ComingSoon from './components/ComingSoon.jsx';
 
 const POLAR_FONTS = `@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&family=Fredoka:wght@500;600;700&display=swap');`;
@@ -157,15 +159,20 @@ export default function PolarPenguinGame({ onBack }) {
           />
         )}
 
-        {/* ── MODULE 4-5: COMING SOON PLACEHOLDERS ── */}
-        {[ROOT_PHASES.SORTER, ROOT_PHASES.EXPEDITION].includes(phase) && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ComingSoon
-              moduleTitle={MODULES_CONFIG.find(m => m.id === phase)?.title || 'Modul'}
-              concept={MODULES_CONFIG.find(m => m.id === phase)?.concept || ''}
-              onBackToHub={() => setPhase(ROOT_PHASES.HUB)}
-            />
-          </div>
+        {/* ── MODULE 4: DATA STREAM SORTER ── */}
+        {phase === ROOT_PHASES.SORTER && (
+          <DataSorter
+            onExit={() => setPhase(ROOT_PHASES.HUB)}
+            onComplete={(score) => completeModule('sorter', score, getConceptName('sorter'))}
+          />
+        )}
+
+        {/* ── MODULE 5: EXPEDITION SPRINT ── */}
+        {phase === ROOT_PHASES.EXPEDITION && (
+          <Expedition
+            onExit={() => setPhase(ROOT_PHASES.HUB)}
+            onComplete={(score) => completeModule('expedition', score, getConceptName('expedition'))}
+          />
         )}
       </div>
     </div>
