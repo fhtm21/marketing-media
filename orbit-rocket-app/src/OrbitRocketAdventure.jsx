@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // ============================================================
 // ORBIT ROCKET ADVENTURE v3 — Full-Screen Landscape HD
@@ -541,7 +541,7 @@ function MechDrag({ options, onPick, mob }) {
 // ════════════════════════════════════════════════════════════
 function MechShoot({ options, onPick }) {
   const [exploded, setExploded] = useState(null);
-  const durations = useMemo(() => [5.5, 4.2, 6.8, 3.8], []);
+  const durations = useMemo(() => [12.0, 9.5, 14.0, 8.5], []);
   const delays = useMemo(() => [0, -1.4, -3.1, -2.2], []);
   const tops = useMemo(() => [16, 31, 50, 68], []);
   const handleClick = (opt, i) => { setExploded(i); setTimeout(() => onPick(opt), 380); };
@@ -870,7 +870,7 @@ const MECH_MAP = {
 // ════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════
-export default function OrbitRocketAdventure() {
+export default function OrbitRocketAdventure({ onBack }) {
   const [screen, setScreen] = useState("intro");
   const [subPhase, setSubPhase] = useState("dialog");
   const [planetIdx, setPlanetIdx] = useState(0);
@@ -971,6 +971,17 @@ export default function OrbitRocketAdventure() {
           background: BG, overflow: "auto", color: "#e8f0ff", fontFamily: "'Exo 2', sans-serif",
         }}>
           <Starfield count={70} fixed />
+          {onBack && (
+            <button onClick={onBack} style={{
+              position: "absolute", top: 20, right: 20,
+              fontFamily: "'Orbitron',monospace", fontSize: 10, letterSpacing: 1.5,
+              color: "rgba(255,255,255,.6)", background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.2)", padding: "8px 16px",
+              borderRadius: 20, cursor: "pointer", transition: "all .2s", zIndex: 10
+            }} className="cta-btn">
+              ✕ EXIT TO HUB
+            </button>
+          )}
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 580, width: "100%", padding: "24px 20px", animation: "rise .6s ease both" }}>
             <div style={{ fontSize: 8.5, fontFamily: "'Orbitron',monospace", letterSpacing: 3, color: "rgba(127,212,255,.42)", marginBottom: 10 }}>BINUS @BEKASI — BUSINESS IT PROGRAM</div>
             <div style={{ fontSize: mob ? 52 : 72, marginBottom: 4, animation: "rocketBounce 3s ease-in-out infinite" }}>🚀</div>
@@ -1042,13 +1053,26 @@ export default function OrbitRocketAdventure() {
                   <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 8, color: planet.color, letterSpacing: .9, fontWeight: 700 }}>{planet.name.toUpperCase()}</div>
                   <div style={{ fontSize: 7.5, color: "rgba(255,255,255,.28)", fontFamily: "'Orbitron',monospace" }}>PLANET {planetIdx + 1} OF {PLANETS.length}</div>
                 </div>
-                {subPhase === "choosing" && (
-                  <div style={{ marginLeft: "auto", background: `${planet.color}16`, border: `1px solid ${planet.color}40`, borderRadius: 5, padding: "2px 6px", fontFamily: "'Orbitron',monospace", fontSize: 7, color: planet.color }}>● LIVE</div>
-                )}
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+                  {subPhase === "choosing" && (
+                    <div style={{ background: `${planet.color}16`, border: `1px solid ${planet.color}40`, borderRadius: 5, padding: "2px 6px", fontFamily: "'Orbitron',monospace", fontSize: 7, color: planet.color }}>● LIVE</div>
+                  )}
+                  {onBack && (
+                    <button onClick={onBack} style={{
+                      fontFamily: "'Orbitron',monospace", fontSize: 7.5, letterSpacing: 1,
+                      color: "rgba(255,100,100,.85)", background: "rgba(255,100,100,.08)",
+                      border: "1px solid rgba(255,100,100,.3)", padding: "4px 8px",
+                      borderRadius: 4, cursor: "pointer", transition: "all .2s",
+                      whiteSpace: "nowrap", zIndex: 10
+                    }}>
+                      ✕ EXIT
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Dialog / question / traveling */}
-              <div style={{ flex: 1, padding: "10px 12px", overflow: "hidden", display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
+              <div className="cyber-scroll" style={{ flex: 1, padding: "10px 12px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
                 {(subPhase === "dialog" || subPhase === "choosing") && (
                   <CharDialog key={`d-${planetIdx}`} guide={planet.guide} dialog={planet.dialog} phase={subPhase} onProceed={onDialogDone} />
                 )}
@@ -1152,9 +1176,22 @@ export default function OrbitRocketAdventure() {
               </div>
             </div>
 
-            <div style={{ textAlign: "center", marginTop: 22 }}>
-              <button onClick={startGame} style={{ fontFamily: "'Orbitron',monospace", fontWeight: 700, fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.88)", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.28)", padding: "11px 28px", borderRadius: 40, cursor: "pointer", transition: "all .2s" }}>↩ RESTART MISSION</button>
-              <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, letterSpacing: 4, color: "rgba(127,212,255,.65)", marginTop: 16 }}>ORBIT ROCKET ADVENTURE</div>
+            <div style={{ textAlign: "center", marginTop: 22, display: "flex", flexDirection: mob ? "column" : "row", justifyContent: "center", alignItems: "center", gap: 12 }}>
+              <button onClick={startGame} style={{ width: mob ? "100%" : "auto", fontFamily: "'Orbitron',monospace", fontWeight: 700, fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.88)", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.28)", padding: "11px 28px", borderRadius: 40, cursor: "pointer", transition: "all .2s" }}>↩ RESTART MISSION</button>
+              {onBack && (
+                <button onClick={onBack} className="cta-btn" style={{
+                  width: mob ? "100%" : "auto",
+                  fontFamily: "'Orbitron',monospace", fontWeight: 700, fontSize: 10, letterSpacing: 1.5,
+                  color: "#04081a", background: "linear-gradient(135deg,#a8ddff,#7fd4ff,#5ec8ff)",
+                  border: "none", padding: "12px 28px", borderRadius: 40, cursor: "pointer",
+                  boxShadow: "0 0 20px rgba(127,212,255,.3)", transition: "all .2s"
+                }}>
+                  ✕ EXIT TO PORTAL
+                </button>
+              )}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 16 }}>
+              <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, letterSpacing: 4, color: "rgba(127,212,255,.65)" }}>ORBIT ROCKET ADVENTURE</div>
             </div>
           </div>
         </div>

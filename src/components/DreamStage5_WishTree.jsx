@@ -99,6 +99,17 @@ export default function DreamStage5_WishTree({ onComplete }) {
         @keyframes wishRise      { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         .lantern-grip { cursor: grab; touch-action: none; }
         .lantern-grip:active { cursor: grabbing; }
+        .lantern-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+          justify-content: center;
+        }
+        @media (max-width: 480px) {
+          .lantern-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
       `}</style>
 
       <p style={{ fontSize:11, letterSpacing:3, textTransform:"uppercase", color:"#a8e6cf", fontWeight:700, margin:"0 0 10px", opacity:.85 }}>
@@ -177,7 +188,7 @@ export default function DreamStage5_WishTree({ onComplete }) {
 
       {/* ── Lantern grid ── */}
       {!hung && (
-        <div style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center" }}>
+        <div className="lantern-grid">
           {WISHES.map((wish, i) => {
             const isBeingDragged = dragging?.key === wish.key;
             const isSnapping     = snapBack === wish.key;
@@ -188,7 +199,6 @@ export default function DreamStage5_WishTree({ onComplete }) {
                 onMouseDown={(e) => startDrag(e, wish)}
                 onTouchStart={(e) => startDrag(e, wish)}
                 style={{
-                  width:"calc(33.33% - 10px)",
                   borderRadius:16,
                   padding:"12px 10px",
                   background: isBeingDragged
